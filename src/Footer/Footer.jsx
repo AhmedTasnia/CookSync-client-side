@@ -16,7 +16,6 @@ const Footer = () => {
           <p className="text-gray-400 text-sm mt-2">Experience good food at your own place. </p>
         </div>
 
-        {/* Social Media Section */}
         <div className="flex flex-col mt-4">
           <h4 className="text-sm text-gray-400 mb-2">Connect with us</h4>
           <p className="mb-1">Social media channels</p>
@@ -28,7 +27,6 @@ const Footer = () => {
           </div>
         </div>
 
-        {/* Newsletter Section */}
         <div className='mt-4'>
           <h4 className="text-sm text-gray-400 mb-2 ">Newsletter sign up</h4>
           <p className="mb-2">Sign up for getting the experience</p>
@@ -36,9 +34,9 @@ const Footer = () => {
             <input
               type="email"
               placeholder="Enter your email"
-              className="w-full px-3 py-2 text-white outline-white border-2 border-[#B8CFCE] bg-transparent focus:border-[#b19472] focus:ring-0"
+              className="w-full px-3 py-2 text-white outline-[#810000] border-2 border-[#810000] bg-transparent focus:border-[#b19472] focus:ring-0"
             />
-            <button className="bg-[#B8CFCE] px-4 py-2 text-white">Sign Up</button>
+            <button className="bg-[#810000] px-4 py-2 text-white">Sign Up</button>
           </div>
           <p className="mt-2 text-xs text-gray-400">
             Is this your website?{" "}
@@ -50,7 +48,6 @@ const Footer = () => {
         </div>
       </div>
 
-      {/* Copyright Section */}
       <div className="text-sm text-gray-100 text-center mt-8">
         <p>© 2025 Product Review Theme by Cook Sync. All rights reserved.</p>
         <p>Proudly powered by Cook Sync.</p>

@@ -20,7 +20,6 @@ const SignUp = () => {
       <div className="min-h-screen jost-font flex items-center justify-center bg-white px-2">
         <div className="bg-white rounded-3xl shadow-lg flex flex-col md:flex-row max-w-4xl w-full overflow-hidden">
 
-          {/* Left Illustration Section */}
           <div className="w-full md:w-1/2 bg-white flex items-center justify-center p-6 md:p-8 rounded-l-3xl">
             <img
               src="https://i.postimg.cc/mgXYw24h/tablet-login-concept-illustration-114360-7863.avif"
@@ -29,7 +28,6 @@ const SignUp = () => {
             />
           </div>
 
-          {/* Right Form Section */}
           <div className="w-full md:w-1/2 bg-red-50 p-6 md:p-10 rounded-r-3xl">
             <h2 className="text-3xl font-semibold text-[#630000] mb-2">Cook Sync</h2>
             <p className="text-sm text-gray-600 mb-6">Hey! Enter your details to sign in to your account</p>

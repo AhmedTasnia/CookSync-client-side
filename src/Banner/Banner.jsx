@@ -28,7 +28,7 @@ const bannerSlides = [
 
 const Banner = () => {
   return (
-    <div className="w-full noto-serif-Regular">
+    <div className="w-full .jost-font">
       <Fade arrows={false} autoplay={true} duration={5000} pauseOnHover={false}>
         {bannerSlides.map((slide, index) => (
           <div
