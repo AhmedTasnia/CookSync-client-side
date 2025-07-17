@@ -1,17 +1,80 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import { useForm } from 'react-hook-form';
 import { FcGoogle } from "react-icons/fc";
 import { FaEye, FaEyeSlash, FaEnvelope, FaLock } from "react-icons/fa";
-import { Link } from 'react-router';
+import { Link, useNavigate } from 'react-router';
 import NavBar from '../Header/Navbar';
 import Footer from '../Footer/Footer';
+
+import { 
+  signInWithEmailAndPassword, 
+  GoogleAuthProvider, 
+  signInWithPopup 
+} from "firebase/auth";
+
+import { auth } from '../../firebase/firebase.config';
+import Swal from 'sweetalert2';
+import { AuthContext } from '../../provider/AuthProvider';  
 
 const SignUp = () => {
   const { register, handleSubmit, formState: { errors } } = useForm();
   const [showPassword, setShowPassword] = useState(false);
+  const navigate = useNavigate();
+  const provider = new GoogleAuthProvider();
 
-  const onSubmit = (data) => {
-    console.log('Collected Data:', data);
+  const { setUser } = useContext(AuthContext) || {};
+
+  const onSubmit = async (data) => {
+    try {
+      const userCredential = await signInWithEmailAndPassword(auth, data.email, data.password);
+      const user = userCredential.user;
+
+      if (setUser) setUser(user);
+
+      Swal.fire({
+        icon: 'success',
+        title: 'Login Successful',
+        text: `Welcome back, ${user.email}`,
+        timer: 1500,
+        showConfirmButton: false,
+      });
+
+      navigate('/');  
+
+    } catch (error) {
+      console.error('Login Error:', error.message);
+      Swal.fire({
+        icon: 'error',
+        title: 'Login Failed',
+        text: error.message,
+      });
+    }
+  };
+
+  const handleGoogleSignIn = async () => {
+    try {
+      const result = await signInWithPopup(auth, provider);
+      const user = result.user;
+
+      if (setUser) setUser(user);
+
+      Swal.fire({
+        icon: 'success',
+        title: `Logged in as ${user.displayName || user.email}`,
+        timer: 1500,
+        showConfirmButton: false,
+      });
+
+      navigate('/');
+
+    } catch (error) {
+      console.error('Google Sign-In Error:', error.message);
+      Swal.fire({
+        icon: 'error',
+        title: 'Google Sign-In Failed',
+        text: error.message,
+      });
+    }
   };
 
   return (
@@ -69,6 +132,7 @@ const SignUp = () => {
 
               <button
                 type="button"
+                onClick={handleGoogleSignIn}
                 className="w-full bg-red-200 hover:bg-red-400 text-white font-semibold py-3 rounded-full flex items-center justify-center gap-2"
               >
                 <FcGoogle className="text-2xl" />
@@ -91,7 +155,7 @@ const SignUp = () => {
           </div>
         </div>
       </div>
-      <Footer />
+      <Footer/>
     </>
   );
 };

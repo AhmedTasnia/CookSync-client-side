@@ -36,7 +36,7 @@ const MembershipCard = () => {
     const mealsToShow = activeTab === "All" ? allMeals : mealsData[activeTab];
 
     return (
-        <div className="container mx-auto bg-base-100 py-8 px-2 sm:px-4 md:px-6">
+        <div className="container mx-auto bg-base-100 jost-font py-8 px-2 sm:px-4 md:px-6">
             <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-center mb-8 md:mb-12 text-[#630000]">
                 Our Meals Categories
             </h1>

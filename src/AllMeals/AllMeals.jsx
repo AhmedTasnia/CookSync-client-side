@@ -2,8 +2,6 @@ import React, { useEffect, useState } from "react";
 import InfiniteScroll from "react-infinite-scroll-component";
 import { FaStar } from "react-icons/fa";
 import { useNavigate } from "react-router";
-import NavBar from "../Header/Navbar";
-import Footer from "../Footer/Footer";
 
 // Fake 100 meals for demo
 const fakeMeals = Array.from({ length: 100 }).map((_, idx) => ({
@@ -53,7 +51,6 @@ const AllMeals = () => {
     setHasMore(displayIndex + limit < filteredMeals.length);
   };
 
-  // ✅ Reset meals on search/filter change
   useEffect(() => {
     const filteredMeals = filterMeals();
     setVisibleMeals(filteredMeals.slice(0, limit));
@@ -62,9 +59,8 @@ const AllMeals = () => {
   }, [searchQuery, category, priceRange]);
 
   return (
-    <>
-      <NavBar />
-      <div className="container mx-auto px-6 py-16">
+
+      <div className="container mx-auto jost-font px-6 py-16">
         <h1 className="text-4xl font-bold text-center mb-10 text-[#630000]">Explore All Meals</h1>
 
         {/* Search & Filters */}
@@ -138,8 +134,6 @@ const AllMeals = () => {
           </div>
         </InfiniteScroll>
       </div>
-      <Footer />
-    </>
   );
 };
 

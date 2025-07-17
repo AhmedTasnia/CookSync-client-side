@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { FaThumbsUp, FaStar } from "react-icons/fa";
 import { useNavigate } from "react-router";
+// import NavBar from "../Components/Header/Navbar";
 import Footer from "../Footer/Footer";
 import NavBar from "../Header/Navbar";
 
@@ -30,29 +31,25 @@ const MealDetails = () => {
     if (!userLiked) {
       setLikes(likes + 1);
       setUserLiked(true);
-      // Here you would PATCH to your server endpoint to persist the like
     }
   };
 
   const handleRequestMeal = () => {
-    // Mock POST for requesting the meal
     alert("Meal request submitted. Status: Pending.");
     navigate("/checkout/premium");
-    // Ideally, post { user, mealId, status: "pending" }
   };
 
   const handleAddReview = () => {
     if (newReview.trim()) {
       setReviews([...reviews, newReview.trim()]);
       setNewReview("");
-      // Here you would POST the review to your server
     }
   };
 
   return (
     <>
     <NavBar/>
-    <div className="container mx-auto py-16 px-6">
+    <div className="container mx-auto jost-font py-16 px-6">
       <div className="max-w-4xl mx-auto bg-white rounded-xl shadow-md border border-[#630000] overflow-hidden">
         <img src={meal.image} alt={meal.title} className="w-full h-80 object-cover rounded-t-xl" />
 
