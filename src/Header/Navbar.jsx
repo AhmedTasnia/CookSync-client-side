@@ -30,7 +30,7 @@ const NavBar = () => {
       </li>
       <li>
         <NavLink
-          to="/Meals"
+          to="/AllMeals"
           className={({ isActive }) =>
             isActive ? "text-red-500 underline pb-1" : "text-white"
           }
