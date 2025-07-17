@@ -9,7 +9,7 @@ const AboutUs = () => {
   };
 
   return (
-    <div className="container mx-auto jost-font flex items-center justify-center bg-white">
+    <div className="container mx-auto bg-gradient-to-r from-[#fff7f7] via-[#fff1f1] to-[#ffecec] jost-font flex items-center bg- justify-center bg-white">
       <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-10 items-center px-5 py-20">
         <div className="space-y-7 text-[#630000]">
           <h1 className="text-4xl md:text-5xl font-extrabold border-b-4 border-[#630000] text-[#630000] inline-block pb-2">

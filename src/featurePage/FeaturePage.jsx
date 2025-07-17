@@ -6,7 +6,7 @@ import { FaRegSmileBeam } from "react-icons/fa";
 
 const FeaturePage = () => {
   return (
-    <div className="min-h-[60vh] flex flex-col justify-center bg-gradient-to-r from-[#fff7f7] via-[#fff1f1] to-[#ffecec] py-20">
+    <div className="container mx-auto flex flex-col justify-center bg-gradient-to-r from-[#fff7f7] via-[#fff1f1] to-[#ffecec] py-20">
       <div className="max-w-7xl mx-auto text-center px-5">
         <h1 className="text-5xl font-bold text-[#630000] mb-14">
           Why Choose Us?

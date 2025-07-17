@@ -22,7 +22,7 @@ const NavBar = () => {
         <NavLink
           to="/"
           className={({ isActive }) =>
-            isActive ? "text-[#810000] underline pb-1" : "text-white"
+            isActive ? "text-red-500 underline pb-1" : "text-white"
           }
         >
           Home
@@ -32,7 +32,7 @@ const NavBar = () => {
         <NavLink
           to="/Meals"
           className={({ isActive }) =>
-            isActive ? "text-[#810000] underline pb-1" : "text-white"
+            isActive ? "text-red-500 underline pb-1" : "text-white"
           }
         >
           Meals
@@ -42,7 +42,7 @@ const NavBar = () => {
         <NavLink
           to="/Upcoming Meals"
           className={({ isActive }) =>
-            isActive ? "text-[#810000] underline pb-1" : "text-white"
+            isActive ? "text-red-500underline pb-1" : "text-white"
           }
         >
           Upcoming Meals
@@ -93,7 +93,7 @@ const NavBar = () => {
               className="h-12 w-12 rounded-full object-cover"
             />
             <h1 className="text-xl font-bold hidden lg:block">
-              Cook <span className="text-2xl text-[#810000]">Sync</span>
+              Cook <span className="text-3xl text-[#810000]">Sync</span>
             </h1>
           </Link>
         </div>

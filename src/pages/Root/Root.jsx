@@ -5,6 +5,7 @@ import AboutUs from '../../AboutUs/AboutUs';
 import Footer from '../../Footer/Footer';
 import FeaturePage from '../../featurePage/FeaturePage';
 import MembershipCard from '../../MembershipCard/MembershipCard';
+import MealByCategory from '../../MealByCategory/MealByCategory';
 const Root = () => {
     
     return (
@@ -12,6 +13,7 @@ const Root = () => {
             <Navbar> </Navbar>
             <Banner> </Banner>
             <AboutUs> </AboutUs>
+            <MealByCategory> </MealByCategory>
             <FeaturePage> </FeaturePage>
             <MembershipCard> </MembershipCard>
             <Footer> </Footer>
