@@ -19,17 +19,32 @@ const NavBar = () => {
   const commonLinks = (
     <>
       <li>
-        <NavLink to="/" className="hover:text-[#810000]">
+        <NavLink
+          to="/"
+          className={({ isActive }) =>
+            isActive ? "text-[#810000] underline pb-1" : "text-white"
+          }
+        >
           Home
         </NavLink>
       </li>
       <li>
-        <NavLink to="/meals" className="hover:text-[#810000]">
+        <NavLink
+          to="/Meals"
+          className={({ isActive }) =>
+            isActive ? "text-[#810000] underline pb-1" : "text-white"
+          }
+        >
           Meals
         </NavLink>
       </li>
-      <li>
-        <NavLink to="/upcoming-meals" className="hover:text-[#810000]">
+       <li>
+        <NavLink
+          to="/Upcoming Meals"
+          className={({ isActive }) =>
+            isActive ? "text-[#810000] underline pb-1" : "text-white"
+          }
+        >
           Upcoming Meals
         </NavLink>
       </li>
@@ -37,13 +52,11 @@ const NavBar = () => {
   );
 
   return (
-    <div className="px-4 navbar shadow-sm bg-[#1B1717] text-white sticky top-0 z-50">
+    <div className="px-4 navbar shadow-sm bg-[#1B1717] jost-font text-white sticky top-0 z-50">
       <div className="container mx-auto flex justify-between items-center py-3">
 
-        {/* Left side: Hamburger + Logo */}
         <div className="flex items-center gap-4">
 
-          {/* Mobile Hamburger */}
           <div className="lg:hidden dropdown dropdown-start">
             <label tabIndex={0} className="cursor-pointer">
               <svg
@@ -66,7 +79,6 @@ const NavBar = () => {
             </ul>
           </div>
 
-          {/* Logo */}
           <Link to="/" className="flex items-center gap-2">
             <img
               src="https://i.postimg.cc/SKZ0ZzdB/Asian-street-2.png"
@@ -79,7 +91,10 @@ const NavBar = () => {
           </Link>
         </div>
 
-        {/* Right side: Notification & Auth */}
+        <div className="hidden lg:flex">
+          <ul className="flex gap-10 items-center justify-center">{commonLinks}</ul>
+        </div>
+
         <div className="flex items-center gap-4">
           <FiBell className="text-2xl hover:text-[#B8CFCE] cursor-pointer" />
 
@@ -98,7 +113,6 @@ const NavBar = () => {
                 className="avatar cursor-pointer"
               >
                 <div className="w-10 rounded-full ring ring-offset-2 ring-[#810000]">
-                  {/* Placeholder for profile image */}
                   <img src="https://i.pravatar.cc/40" alt="profile" />
                 </div>
               </div>
@@ -106,7 +120,7 @@ const NavBar = () => {
                 tabIndex={0}
                 className="menu menu-sm dropdown-content mt-3 z-[1] p-2 shadow bg-white text-black rounded-xl w-52"
               >
-             <li>
+                <li>
                   <Link to="/dashboard">Dashboard</Link>
                 </li>
                 <div className="divider my-1"></div>
