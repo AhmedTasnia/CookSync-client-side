@@ -1,5 +1,5 @@
-import React, { Suspense } from "react";
-import { createBrowserRouter } from "react-router";
+import React from "react";
+import { createBrowserRouter } from "react-router"; // ✅ Use react-router-dom, not react-router
 import Root from "../pages/Root/root";
 import SignUp from "../Components/JoinUs/SignUp";
 import MealDetails from "../Components/MealDetails/MealDetails";
@@ -7,36 +7,56 @@ import Register from "../Components/Register/Register";
 import AllMeals from "../AllMeals/AllMeals";
 import UpcomingMeals from "../UpcomingMeal/UpcomingMeal";
 import HomeLayout from "../layouts/HomeLayout";
+import DashBoardLayout from "../layouts/DashBoardLayout";
+import UserDashBoard from "../pages/DashBoard/UserDashBoard";
+import AdminDashBoard from "../pages/DashBoard/AdminDashBoard";
+
+// New imports for Dashboard
 
 export const router = createBrowserRouter([
   {
     path: "/",
-    Component: HomeLayout,
+    element: <HomeLayout />,
     children: [
       {
         index: true,
-        Component: Root,
+        element: <Root />,
       },
       {
         path: "/AllMeals",
-        Component: AllMeals,
+        element: <AllMeals />,
       },
       {
         path: "/UpcomingMeals",
-        Component: UpcomingMeals,
+        element: <UpcomingMeals />,
+      },
+      {
+        path: "/mealDetails",
+        element: <MealDetails />,
       },
     ],
   },
   {
     path: "/SignUp",
-    Component: SignUp,
+    element: <SignUp />,
   },
   {
     path: "/register",
-    Component: Register,
+    element: <Register />,
   },
   {
-    path: "/mealDetails",
-    Component: MealDetails,
+    path: "/dashboard",
+    Component: DashBoardLayout ,
+    children: [
+      {
+        path: "user",
+        Component: UserDashBoard,
+      },
+      {
+        path: "admin",
+        Component: AdminDashBoard,
+      },
+      
+    ],
   },
 ]);

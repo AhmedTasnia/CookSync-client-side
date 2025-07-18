@@ -47,8 +47,7 @@ const MealDetails = () => {
   };
 
   return (
-    <>
-    <NavBar/>
+    
     <div className="container mx-auto jost-font py-16 px-6">
       <div className="max-w-4xl mx-auto bg-white rounded-xl shadow-md border border-[#630000] overflow-hidden">
         <img src={meal.image} alt={meal.title} className="w-full h-80 object-cover rounded-t-xl" />
@@ -121,9 +120,7 @@ const MealDetails = () => {
         </div>
       </div>
     </div>
-    <Footer/>
-    </>
-    
+  
   );
 };
 

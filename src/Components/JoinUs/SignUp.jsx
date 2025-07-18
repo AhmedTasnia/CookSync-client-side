@@ -6,15 +6,15 @@ import { Link, useNavigate } from 'react-router';
 import NavBar from '../Header/Navbar';
 import Footer from '../Footer/Footer';
 
-import { 
-  signInWithEmailAndPassword, 
-  GoogleAuthProvider, 
-  signInWithPopup 
+import {
+  signInWithEmailAndPassword,
+  GoogleAuthProvider,
+  signInWithPopup
 } from "firebase/auth";
 
 import { auth } from '../../firebase/firebase.config';
 import Swal from 'sweetalert2';
-import { AuthContext } from '../../provider/AuthProvider';  
+import { AuthContext } from '../../provider/AuthProvider';
 
 const SignUp = () => {
   const { register, handleSubmit, formState: { errors } } = useForm();
@@ -39,7 +39,12 @@ const SignUp = () => {
         showConfirmButton: false,
       });
 
-      navigate('/');  
+      // Redirect admin to dashboard
+      if (user.email === 'admin@gmail.com') {
+        navigate('/admin/dashboard');
+      } else {
+        navigate('/');
+      }
 
     } catch (error) {
       console.error('Login Error:', error.message);
@@ -65,7 +70,11 @@ const SignUp = () => {
         showConfirmButton: false,
       });
 
-      navigate('/');
+      if (user.email === 'admin@gmail.com') {
+        navigate('/admin/dashboard');
+      } else {
+        navigate('/');
+      }
 
     } catch (error) {
       console.error('Google Sign-In Error:', error.message);
@@ -155,7 +164,7 @@ const SignUp = () => {
           </div>
         </div>
       </div>
-      <Footer/>
+      <Footer />
     </>
   );
 };
