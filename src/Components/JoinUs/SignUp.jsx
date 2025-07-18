@@ -41,7 +41,7 @@ const SignUp = () => {
 
       // Redirect admin to dashboard
       if (user.email === 'admin@gmail.com') {
-        navigate('/admin/dashboard');
+        navigate('/');
       } else {
         navigate('/');
       }
@@ -71,7 +71,7 @@ const SignUp = () => {
       });
 
       if (user.email === 'admin@gmail.com') {
-        navigate('/admin/dashboard');
+        navigate('/');
       } else {
         navigate('/');
       }

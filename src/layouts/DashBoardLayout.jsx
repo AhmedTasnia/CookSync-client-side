@@ -2,7 +2,6 @@ import React, { useContext } from "react";
 import { Link, NavLink, Outlet, useNavigate } from "react-router";
 import { AuthContext } from "../provider/AuthProvider";
 import {
-  FaTachometerAlt,
   FaUserCircle,
   FaUsers,
   FaUtensils,
@@ -16,7 +15,10 @@ const DashboardLayout = () => {
   const { user } = useContext(AuthContext);
   const navigate = useNavigate();
 
-  const isAdmin = user?.role === "admin";
+//   const isAdmin = user?.role === "admin";
+
+  const isAdmin = user?.email === "admin@gmail.com";
+
 
   const adminLinks = [
     { to: "/dashboard/adminProfile", label: "Admin Profile", icon: <FaUserCircle /> },
@@ -39,7 +41,7 @@ const DashboardLayout = () => {
   };
 
   return (
-    <div className="flex min-h-screen  bg-gray-50">
+    <div className="flex min-h-screen jost-font bg-gray-50">
       {/* Sidebar */}
       <aside className="w-64 bg-[#1B1717] text-white shadow-md flex flex-col p-6 justify-between">
         {/* Logo */}

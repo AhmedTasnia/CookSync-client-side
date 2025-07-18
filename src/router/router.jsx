@@ -1,5 +1,5 @@
 import React from "react";
-import { createBrowserRouter } from "react-router"; // ✅ Use react-router-dom, not react-router
+import { createBrowserRouter } from "react-router"; 
 import Root from "../pages/Root/root";
 import SignUp from "../Components/JoinUs/SignUp";
 import MealDetails from "../Components/MealDetails/MealDetails";
@@ -8,10 +8,12 @@ import AllMeals from "../AllMeals/AllMeals";
 import UpcomingMeals from "../UpcomingMeal/UpcomingMeal";
 import HomeLayout from "../layouts/HomeLayout";
 import DashBoardLayout from "../layouts/DashBoardLayout";
-import AdminProfile from "../pages/DashBoard/AdminProfile";
-import UserProfile from "../pages/DashBoard/UserProfile";
 
-// New imports for Dashboard
+// These are the pages you said you want:
+import UserProfile from "../pages/DashBoard/UserProfile";
+import AdminProfile from "../pages/DashBoard/AdminProfile";
+import RequestedMeals from "../pages/DashBoard/requesterdMeal";
+import MyReviews from "../pages/DashBoard/MyReviews";
 
 export const router = createBrowserRouter([
   {
@@ -23,15 +25,15 @@ export const router = createBrowserRouter([
         element: <Root />,
       },
       {
-        path: "/AllMeals",
+        path: "AllMeals",
         element: <AllMeals />,
       },
       {
-        path: "/UpcomingMeals",
+        path: "UpcomingMeals",
         element: <UpcomingMeals />,
       },
       {
-        path: "/mealDetails",
+        path: "mealDetails",
         element: <MealDetails />,
       },
     ],
@@ -46,17 +48,24 @@ export const router = createBrowserRouter([
   },
   {
     path: "/dashboard",
-    Component: DashBoardLayout ,
+    element: <DashBoardLayout />, 
     children: [
       {
         path: "userProfile",
-        Component: UserProfile,
+        element: <UserProfile />,
       },
       {
         path: "adminProfile",
-        Component: AdminProfile,
+        element: <AdminProfile />,
       },
-      
+      {
+        path: "requestedMeals",
+        element: <RequestedMeals />,
+      },
+      {
+        path: "myReviews",
+        element: <MyReviews />,
+      },
     ],
   },
 ]);
