@@ -10,14 +10,28 @@ import { useNavigate } from 'react-router';
 import Swal from 'sweetalert2';
 import { AuthContext } from '../../provider/AuthProvider';
 
-
 const Register = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [photoURL, setPhotoURL] = useState('');
-  const { register, handleSubmit, formState: { errors }, reset } = useForm();
+  const { register: formRegister, handleSubmit, formState: { errors }, reset } = useForm();
   const navigate = useNavigate();
   const provider = new GoogleAuthProvider();
   const { setUser } = useContext(AuthContext);
+
+  const saveUserToDB = async (user) => {
+    const newUser = {
+      name: user.displayName || "No name",
+      email: user.email,
+      photo: user.photoURL || "",
+      role: "user"
+    };
+
+    await fetch('http://localhost:3000/users', {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(newUser)
+    });
+  };
 
   const handleImageUpload = async (e) => {
     const imageFile = e.target.files[0];
@@ -48,10 +62,12 @@ const Register = () => {
 
       await updateProfile(user, {
         displayName: data.name,
-        photoURL: photoURL || "", 
+        photoURL: photoURL || "",
       });
 
       setUser(user);
+      await saveUserToDB(user); // ✅ Save to MongoDB after profile update
+
       reset();
       Swal.fire({
         icon: 'success',
@@ -72,8 +88,9 @@ const Register = () => {
 
   const handleGoogleSignIn = () => {
     signInWithPopup(auth, provider)
-      .then((result) => {
+      .then(async (result) => {
         setUser(result.user);
+        await saveUserToDB(result.user); // ✅ Save Google user to MongoDB
         Swal.fire({
           icon: "success",
           title: `Logged in as ${result.user.displayName}`,
@@ -107,7 +124,7 @@ const Register = () => {
                 <input
                   type="text"
                   placeholder="Your Name"
-                  {...register('name', { required: 'Name is required' })}
+                  {...formRegister('name', { required: 'Name is required' })}
                   className="w-full pl-12 pr-3 py-3 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
@@ -118,15 +135,14 @@ const Register = () => {
                 <input
                   type="email"
                   placeholder="Your Email"
-                  {...register('email', { required: 'Email is required' })}
+                  {...formRegister('email', { required: 'Email is required' })}
                   className="w-full pl-12 pr-3 py-3 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
               {errors.email && <p className="text-red-500 text-xs">{errors.email.message}</p>}
 
               <div className="relative flex items-center">
-              <FaImage className="absolute left-4 text-gray-400 text-lg" />
-
+                <FaImage className="absolute left-4 text-gray-400 text-lg" />
                 <input
                   type="file"
                   accept="image/*"
@@ -140,7 +156,7 @@ const Register = () => {
                 <input
                   type={showPassword ? "text" : "password"}
                   placeholder="Password"
-                  {...register('password', { required: 'Password is required' })}
+                  {...formRegister('password', { required: 'Password is required' })}
                   className="w-full pl-12 pr-12 py-3 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
                 <button

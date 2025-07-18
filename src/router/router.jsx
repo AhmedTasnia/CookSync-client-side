@@ -19,6 +19,7 @@ import ManageUser from "../pages/DashBoard/ManageUser";
 import AddMeal from "../pages/DashBoard/AddMeal";
 import AllReviews from "../pages/DashBoard/AllReviews";
 import ServedMeal from "../pages/DashBoard/ServedMeal";
+import MealUpcoming from "../pages/DashBoard/Mealupcoming";
 
 export const router = createBrowserRouter([
   {
@@ -96,7 +97,10 @@ export const router = createBrowserRouter([
         path: "serveMeals",
         element: <ServedMeal />,
       },
-      
+      {
+        path: "upcomingMealsAdmin",
+        element: <MealUpcoming/>
+      }
     ],
   },
 ]);

@@ -26,7 +26,7 @@ const DashboardLayout = () => {
     { to: "/dashboard/allMeals", label: "All Meals", icon: <FaClipboardList /> },
     { to: "/dashboard/AllReviews", label: "All Reviews", icon: <FaComments /> },
     { to: "/dashboard/serveMeals", label: "Serve Meals", icon: <FaUtensils /> },
-    { to: "/dashboard/upcomingMeals", label: "Upcoming Meals", icon: <FaClipboardList /> },
+    { to: "/dashboard/upcomingMealsAdmin", label: "Upcoming Meals", icon: <FaClipboardList /> },
   ];
 
   const userLinks = [
