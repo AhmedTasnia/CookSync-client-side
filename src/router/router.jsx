@@ -15,6 +15,10 @@ import AdminProfile from "../pages/DashBoard/AdminProfile";
 import RequestedMeals from "../pages/DashBoard/requesterdMeal";
 import MyReviews from "../pages/DashBoard/MyReviews";
 import PaymentHIstory from "../pages/DashBoard/PaymentHIstory";
+import ManageUser from "../pages/DashBoard/ManageUser";
+import AddMeal from "../pages/DashBoard/AddMeal";
+import AllReviews from "../pages/DashBoard/AllReviews";
+import ServedMeal from "../pages/DashBoard/ServedMeal";
 
 export const router = createBrowserRouter([
   {
@@ -71,6 +75,28 @@ export const router = createBrowserRouter([
         path: "paymentHistory",
         element: <PaymentHIstory />,
       },
+      {
+        path:"manageUsers",
+        element: <ManageUser />,
+      },
+      {
+        path: "addMeal",
+        element: <AddMeal />,
+      },
+      {
+        path: "allReviews",
+        element: <AllReviews />,
+      },
+      
+      {
+        path: "allMeals",
+        element: <AllMeals />,
+      },
+      {
+        path: "serveMeals",
+        element: <ServedMeal />,
+      },
+      
     ],
   },
 ]);
