@@ -15,7 +15,6 @@ const DashboardLayout = () => {
   const { user } = useContext(AuthContext);
   const navigate = useNavigate();
 
-//   const isAdmin = user?.role === "admin";
 
   const isAdmin = user?.email === "admin@gmail.com";
 
