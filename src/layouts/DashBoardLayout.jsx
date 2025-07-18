@@ -19,21 +19,19 @@ const DashboardLayout = () => {
   const isAdmin = user?.role === "admin";
 
   const adminLinks = [
-    { to: "/dashboard/admin", label: "Dashboard", icon: <FaTachometerAlt /> },
-    { to: "/dashboard/AdminProfile", label: "Admin Profile", icon: <FaUserCircle /> },
-    { to: "/dashboard/ManageUsers", label: "Manage Users", icon: <FaUsers /> },
-    { to: "/dashboard/AddMeal", label: "Add Meal", icon: <FaUtensils /> },
-    { to: "/dashboard/AllMeals", label: "All Meals", icon: <FaClipboardList /> },
-    { to: "/dashboard/ServeMeals", label: "Serve Meals", icon: <FaUtensils /> },
-    { to: "/dashboard/UpcomingMeals", label: "Upcoming Meals", icon: <FaClipboardList /> },
+    { to: "/dashboard/adminProfile", label: "Admin Profile", icon: <FaUserCircle /> },
+    { to: "/dashboard/manageUsers", label: "Manage Users", icon: <FaUsers /> },
+    { to: "/dashboard/addMeal", label: "Add Meal", icon: <FaUtensils /> },
+    { to: "/dashboard/allMeals", label: "All Meals", icon: <FaClipboardList /> },
+    { to: "/dashboard/serveMeals", label: "Serve Meals", icon: <FaUtensils /> },
+    { to: "/dashboard/upcomingMeals", label: "Upcoming Meals", icon: <FaClipboardList /> },
   ];
 
   const userLinks = [
-    { to: "/dashboard/user", label: "Dashboard", icon: <FaTachometerAlt /> },
-    { to: "/dashboard/MyProfile", label: "My Profile", icon: <FaUserCircle /> },
-    { to: "/dashboard/RequestedMeals", label: "Requested Meals", icon: <FaUtensils /> },
-    { to: "/dashboard/MyReviews", label: "My Reviews", icon: <FaComments /> },
-    { to: "/dashboard/PaymentHistory", label: "Payment History", icon: <FaMoneyCheckAlt /> },
+    { to: "/dashboard/userProfile", label: "My Profile", icon: <FaUserCircle /> },
+    { to: "/dashboard/requestedMeals", label: "Requested Meals", icon: <FaUtensils /> },
+    { to: "/dashboard/myReviews", label: "My Reviews", icon: <FaComments /> },
+    { to: "/dashboard/paymentHistory", label: "Payment History", icon: <FaMoneyCheckAlt /> },
   ];
 
   const handleExit = () => {
@@ -41,7 +39,7 @@ const DashboardLayout = () => {
   };
 
   return (
-    <div className="flex min-h-screen bg-gray-50">
+    <div className="flex min-h-screen  bg-gray-50">
       {/* Sidebar */}
       <aside className="w-64 bg-[#1B1717] text-white shadow-md flex flex-col p-6 justify-between">
         {/* Logo */}
@@ -52,7 +50,7 @@ const DashboardLayout = () => {
               alt="logo"
               className="h-15 w-12 rounded-full object-cover"
             />
-            <h1 className="text-xl font-bold hidden lg:block">
+            <h1 className="text-xl font-bold  lg:block">
               Cook <span className="text-3xl text-[#810000]">Sync</span>
             </h1>
           </Link>
@@ -78,7 +76,7 @@ const DashboardLayout = () => {
                     className={({ isActive }) =>
                       `flex items-center gap-3 px-4 py-2 rounded-full transition ${
                         isActive
-                          ? "bg-primary text-white"
+                          ? "bg-[#810000] text-white"
                           : "text-gray-700 hover:bg-gray-200 hover:text-gray-900"
                       }`
                     }

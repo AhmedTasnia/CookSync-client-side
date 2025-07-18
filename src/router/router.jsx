@@ -8,8 +8,8 @@ import AllMeals from "../AllMeals/AllMeals";
 import UpcomingMeals from "../UpcomingMeal/UpcomingMeal";
 import HomeLayout from "../layouts/HomeLayout";
 import DashBoardLayout from "../layouts/DashBoardLayout";
-import UserDashBoard from "../pages/DashBoard/UserDashBoard";
-import AdminDashBoard from "../pages/DashBoard/AdminDashBoard";
+import AdminProfile from "../pages/DashBoard/AdminProfile";
+import UserProfile from "../pages/DashBoard/UserProfile";
 
 // New imports for Dashboard
 
@@ -49,12 +49,12 @@ export const router = createBrowserRouter([
     Component: DashBoardLayout ,
     children: [
       {
-        path: "user",
-        Component: UserDashBoard,
+        path: "userProfile",
+        Component: UserProfile,
       },
       {
-        path: "admin",
-        Component: AdminDashBoard,
+        path: "adminProfile",
+        Component: AdminProfile,
       },
       
     ],
