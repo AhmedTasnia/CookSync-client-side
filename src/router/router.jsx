@@ -1,5 +1,5 @@
 import React from "react";
-import { createBrowserRouter } from "react-router"; 
+import { createBrowserRouter } from "react-router";
 import Root from "../pages/Root/root";
 import SignUp from "../Components/JoinUs/SignUp";
 import MealDetails from "../Components/MealDetails/MealDetails";
@@ -16,10 +16,12 @@ import RequestedMeals from "../pages/DashBoard/requesterdMeal";
 import MyReviews from "../pages/DashBoard/MyReviews";
 import PaymentHIstory from "../pages/DashBoard/PaymentHIstory";
 import ManageUser from "../pages/DashBoard/ManageUser";
-import AddMeal from "../pages/DashBoard/AddMeal";
 import AllReviews from "../pages/DashBoard/AllReviews";
+import AddMeal from "../pages/DashBoard/AddMeal";
 import ServedMeal from "../pages/DashBoard/ServedMeal";
 import MealUpcoming from "../pages/DashBoard/Mealupcoming";
+import CheckoutPage from "../Components/Checkout/Checkout";
+import AdminAllMeals from "../pages/DashBoard/AdminAllMeals";
 
 export const router = createBrowserRouter([
   {
@@ -42,6 +44,10 @@ export const router = createBrowserRouter([
         path: "mealDetails",
         element: <MealDetails />,
       },
+      {
+        path: "/checkout/:packageName",
+        element: <CheckoutPage />,
+      },
     ],
   },
   {
@@ -54,7 +60,7 @@ export const router = createBrowserRouter([
   },
   {
     path: "/dashboard",
-    element: <DashBoardLayout />, 
+    element: <DashBoardLayout />,
     children: [
       {
         path: "userProfile",
@@ -77,21 +83,21 @@ export const router = createBrowserRouter([
         element: <PaymentHIstory />,
       },
       {
-        path:"manageUsers",
+        path: "manageUsers",
         element: <ManageUser />,
       },
       {
-        path: "addMeal",
-        element: <AddMeal />,
+        path: "adminAllMeals",
+        element: <AdminAllMeals />,
       },
       {
         path: "allReviews",
         element: <AllReviews />,
       },
-      
+
       {
-        path: "allMeals",
-        element: <AllMeals />,
+        path: "addMeal",
+        element: <AddMeal />,
       },
       {
         path: "serveMeals",
@@ -99,8 +105,8 @@ export const router = createBrowserRouter([
       },
       {
         path: "upcomingMealsAdmin",
-        element: <MealUpcoming/>
-      }
+        element: <MealUpcoming />,
+      },
     ],
   },
 ]);

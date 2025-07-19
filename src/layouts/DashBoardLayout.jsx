@@ -23,7 +23,7 @@ const DashboardLayout = () => {
     { to: "/dashboard/adminProfile", label: "Admin Profile", icon: <FaUserCircle /> },
     { to: "/dashboard/manageUsers", label: "Manage Users", icon: <FaUsers /> },
     { to: "/dashboard/addMeal", label: "Add Meal", icon: <FaUtensils /> },
-    { to: "/dashboard/allMeals", label: "All Meals", icon: <FaClipboardList /> },
+    { to: "/dashboard/adminAllMeals", label: "All Meals", icon: <FaClipboardList /> },
     { to: "/dashboard/AllReviews", label: "All Reviews", icon: <FaComments /> },
     { to: "/dashboard/serveMeals", label: "Serve Meals", icon: <FaUtensils /> },
     { to: "/dashboard/upcomingMealsAdmin", label: "Upcoming Meals", icon: <FaClipboardList /> },

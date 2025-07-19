@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { FaTrashAlt, FaEye, FaEdit, FaSortAmountDown } from "react-icons/fa";
 
-const AllMeals = () => {
+const AdminAllMeals = () => {
   const [meals, setMeals] = useState([]);
   const [loading, setLoading] = useState(true);
   const [sortField, setSortField] = useState(""); // 'likes' or 'reviews_count'
@@ -144,4 +144,4 @@ const AllMeals = () => {
   );
 };
 
-export default AllMeals;
+export default AdminAllMeals;

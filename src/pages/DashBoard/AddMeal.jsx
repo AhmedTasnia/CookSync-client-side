@@ -1,5 +1,6 @@
 import React, { useContext, useState } from "react";
 import { useForm } from "react-hook-form";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   FaUtensils,
   FaListAlt,
@@ -11,9 +12,12 @@ import {
   FaPlusCircle,
 } from "react-icons/fa";
 import { AuthContext } from "../../provider/AuthProvider";
+import Swal from "sweetalert2";
 
 const AddMeal = () => {
   const { user } = useContext(AuthContext);
+  const queryClient = useQueryClient();
+
   const {
     register,
     handleSubmit,
@@ -25,39 +29,72 @@ const AddMeal = () => {
   const [imageUploading, setImageUploading] = useState(false);
   const [uploadError, setUploadError] = useState("");
 
-  const IMAGE_BB_API_KEY = "YOUR_IMAGE_BB_API_KEY"; // replace with your key
+  // ✅ Mutation
+  const mutation = useMutation({
+    mutationFn: async (mealData) => {
+      const res = await fetch("http://localhost:3000/api/meals", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(mealData),
+      });
+      if (!res.ok) throw new Error("Failed to add meal");
+      return res.json();
+    },
+    onSuccess: () => {
+    queryClient.invalidateQueries(["meals"]);
+    reset();
+    setImageUrl("");
+    Swal.fire({
+      icon: "success",
+      title: "Meal Added!",
+      text: "Your meal has been successfully added.",
+      confirmButtonColor: "#810000",
+    });
+  },
+  onError: () => {
+    Swal.fire({
+      icon: "error",
+      title: "Oops...",
+      text: "Something went wrong while adding the meal.",
+      confirmButtonColor: "#810000",
+    });
+  },
+  });
 
+  // ✅ Image Upload (Cloudinary)
   const handleImageUpload = async (file) => {
     setUploadError("");
     if (!file) return;
 
     setImageUploading(true);
-
     const formData = new FormData();
-    formData.append("image", file);
+    formData.append("file", file);
+    formData.append("upload_preset", import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET);
 
     try {
       const res = await fetch(
-        `https://api.imgbb.com/1/upload?key=${IMAGE_BB_API_KEY}`,
+        `https://api.cloudinary.com/v1_1/${import.meta.env.VITE_CLOUDINARY_CLOUD_NAME}/image/upload`,
         {
           method: "POST",
           body: formData,
         }
       );
       const data = await res.json();
-      if (data.success) {
-        setImageUrl(data.data.url);
+      if (data.secure_url) {
+        setImageUrl(data.secure_url);
       } else {
         setUploadError("Failed to upload image");
       }
-    } catch  {
+    } catch (error) {
       setUploadError("Failed to upload image");
+      console.error("Image upload failed:", error);
     } finally {
       setImageUploading(false);
     }
   };
 
-  const onSubmit = async (formData) => {
+  // ✅ Submit
+  const onSubmit = (formData) => {
     if (!imageUrl) {
       alert("Please upload an image before submitting");
       return;
@@ -78,23 +115,7 @@ const AddMeal = () => {
       reviews_count: 0,
     };
 
-    try {
-      const response = await fetch("/api/meals", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(mealData),
-      });
-
-      if (response.ok) {
-        alert("Meal added successfully!");
-        reset();
-        setImageUrl("");
-      } else {
-        alert("Failed to add meal");
-      }
-    } catch {
-      alert("Error adding meal");
-    }
+    mutation.mutate(mealData);
   };
 
   return (
@@ -155,9 +176,7 @@ const AddMeal = () => {
             onChange={(e) => handleImageUpload(e.target.files[0])}
             className="w-full rounded-lg"
           />
-          {imageUploading && (
-            <p className="text-blue-600 mt-1">Uploading image...</p>
-          )}
+          {imageUploading && <p className="text-blue-600 mt-1">Uploading image...</p>}
           {uploadError && <p className="text-red-600 mt-1">{uploadError}</p>}
           {imageUrl && (
             <img
@@ -220,7 +239,7 @@ const AddMeal = () => {
           )}
         </div>
 
-        {/* Distributor Name (readonly) */}
+        {/* Distributor Name */}
         <div>
           <label className="flex items-center gap-2 mb-1 font-semibold text-gray-800">
             <FaUser /> Distributor Name
@@ -233,7 +252,7 @@ const AddMeal = () => {
           />
         </div>
 
-        {/* Distributor Email (readonly) */}
+        {/* Distributor Email */}
         <div>
           <label className="flex items-center gap-2 mb-1 font-semibold text-gray-800">
             <FaEnvelope /> Distributor Email
@@ -246,14 +265,14 @@ const AddMeal = () => {
           />
         </div>
 
-        {/* Submit Button */}
+        {/* Submit */}
         <button
           type="submit"
-          disabled={isSubmitting || imageUploading}
+          disabled={isSubmitting || imageUploading || mutation.isLoading}
           className="w-full flex items-center justify-center gap-2 bg-[#810000] text-white px-6 py-3 rounded-lg hover:bg-[#a30000] transition disabled:opacity-50"
         >
           <FaPlusCircle />
-          {isSubmitting ? "Adding Meal..." : "Add Meal"}
+          {mutation.isLoading ? "Adding Meal..." : "Add Meal"}
         </button>
       </form>
     </div>

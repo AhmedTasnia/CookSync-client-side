@@ -1,33 +1,43 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { AuthContext } from "../../provider/AuthProvider";
+
+const fetchPayments = async (email) => {
+  const response = await fetch(`http://localhost:3000/payments?email=${email}`);
+  if (!response.ok) {
+    throw new Error("Failed to fetch payment history");
+  }
+  return response.json();
+};
 
 const PaymentHistory = () => {
   const { user } = useContext(AuthContext);
-  const [payments, setPayments] = useState([]);
-  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    if (user?.email) {
-      fetch(`https://your-server.com/payments?email=${user.email}`)
-        .then((res) => res.json())
-        .then((data) => {
-          setPayments(data);
-          setLoading(false);
-        })
-        .catch((err) => {
-          console.error(err);
-          setLoading(false);
-        });
-    }
-  }, [user?.email]);
+  const { data: payments = [], isLoading, isError } = useQuery({
+    queryKey: ["payments", user?.email],
+    enabled: !!user?.email,
+    queryFn: () => fetchPayments(user.email),
+  });
 
-  if (loading) {
-    return <div className="text-center py-10 font-semibold text-lg">Loading Payment History...</div>;
+  if (isLoading) {
+    return (
+      <div className="text-center py-10 font-semibold text-lg">
+        Loading Payment History...
+      </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <div className="text-center py-10 text-red-500 font-semibold text-lg">
+        Failed to load payment history.
+      </div>
+    );
   }
 
   return (
-    <div className="max-w-5xl mx-auto p-4">
-      <h2 className="text-2xl font-semibold text-center mb-6">My Payment History</h2>
+    <div className="max-w-6xl jost-font mx-auto p-4 rounded-lg shadow-lg bg-white">
+      <h2 className="text-3xl font-semibold text-center mb-10 mt-6">My Payment History</h2>
 
       {payments.length === 0 ? (
         <div className="text-center text-gray-500 mt-10">
@@ -50,9 +60,11 @@ const PaymentHistory = () => {
                 <tr key={payment._id} className="text-center">
                   <td className="p-3 border">{index + 1}</td>
                   <td className="p-3 border">{payment.mealTitle || "N/A"}</td>
-                  <td className="p-3 border">${payment.amount}</td>
+                  <td className="p-3 border">{payment.price}</td>
                   <td className="p-3 border">{payment.transactionId}</td>
-                  <td className="p-3 border">{new Date(payment.date).toLocaleDateString()}</td>
+                  <td className="p-3 border">
+                    {new Date(payment.date).toLocaleDateString()}
+                  </td>
                 </tr>
               ))}
             </tbody>
