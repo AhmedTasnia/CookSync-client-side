@@ -6,7 +6,7 @@ import { createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, up
 import NavBar from '../Header/Navbar';
 import Footer from '../Footer/Footer';
 import { auth } from '../../firebase/firebase.config';
-import { useNavigate } from 'react-router';
+import { Link, useNavigate } from 'react-router';
 import Swal from 'sweetalert2';
 import { AuthContext } from '../../provider/AuthProvider';
 
@@ -170,10 +170,15 @@ const Register = () => {
               {errors.password && <p className="text-red-500 text-xs">{errors.password.message}</p>}
 
               <p className="text-sm text-center text-gray-600">
-                Already have an account?{' '}
-                <a href="/login" className="text-blue-600 hover:underline">
+                {/* Already have an account?{' '} */}
+                {/* <a href="/login" className="text-blue-600 hover:underline">
                   Login
-                </a>
+                </a> */}
+                 <Link to="/SignUp" className="w-full md:w-auto block">
+                <p className="mt-4 text-sm text-center text-gray-600">
+                  Already have an account? <span className="text-blue-600 hover:underline">Login</span>
+                </p>
+              </Link>
               </p>
 
               <button
