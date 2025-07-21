@@ -40,7 +40,7 @@ const RequestedMeals = () => {
         } else {
           Swal.fire("Failed!", "Failed to cancel meal request.", "error");
         }
-      } catch (error) {
+      } catch  {
         Swal.fire("Error!", "Something went wrong.", "error");
       }
     }

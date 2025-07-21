@@ -15,6 +15,7 @@ const MealDetails = () => {
   const [reviews, setReviews] = useState([]);
   const [newReview, setNewReview] = useState("");
 
+  // Fetch meal details
   useEffect(() => {
     fetch(`http://localhost:3000/api/meals/${id}`)
       .then((res) => res.json())
@@ -30,108 +31,79 @@ const MealDetails = () => {
     return <p className="text-center my-10">Loading meal details...</p>;
   }
 
-  const handleLike = () => {
-    if (!userLiked) {
-      setLikes((prev) => prev + 1);
-      setUserLiked(true);
+  // ✅ Handle Like Function
+  const handleLike = async () => {
+    if (!user) {
+      Swal.fire("Please login first", "", "warning");
+      navigate("/login");
+      return;
     }
-  };
 
-  const handleRequestMeal = async () => {
-  if (!user) {
-    Swal.fire("Please login first", "", "warning");
-    navigate("/login");  // optionally redirect to login page
-    return;
-  }
+    if (userLiked) return;
 
-  const requestData = {
-    userName: user.displayName,
-    userEmail: user.email,
-    mealId: meal._id,
-    mealTitle: meal.title,
-    distributorName: meal.distributorName,
-    status: "Pending",
-    requestTime: new Date().toISOString(),
-  };
-
-  try {
-    const res = await fetch("http://localhost:3000/api/mealRequests", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(requestData),
-    });
-
-    if (res.ok) {
-      Swal.fire({
-        title: "Request Submitted",
-        text: "Request is pending approval.",
-        icon: "success",
-        timer: 2000,
-        showConfirmButton: false,
+    try {
+      const res = await fetch(`http://localhost:3000/api/meals/${meal._id}/like`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userEmail: user.email }),
       });
 
-      // Pass displayPrice so CheckoutPage won't error
-      
-    } else {
-      Swal.fire("Failed to submit request", "", "error");
+      if (res.ok) {
+        setLikes((prev) => prev + 1);
+        setUserLiked(true);
+      } else {
+        const data = await res.json();
+        Swal.fire("Error", data.message || "Failed to like the meal.", "error");
+      }
+    } catch (error) {
+      console.error(error);
+      Swal.fire("Error", "Something went wrong while liking.", "error");
     }
-  } catch (error) {
-    console.error(error);
-    Swal.fire("Something went wrong", "", "error");
-  }
-};
+  };
 
+  // ✅ Handle Meal Request
+  const handleRequestMeal = async () => {
+    if (!user) {
+      Swal.fire("Please login first", "", "warning");
+      navigate("/login");
+      return;
+    }
 
-  // const handleRequestMeal = async () => {
-  //   if (!user) {
-  //     Swal.fire({
-  //       title: "Login Required",
-  //       text: "Please login to request this meal.",
-  //       icon: "warning",
-  //       confirmButtonText: "Go to Login"
-  //     }).then((result) => {
-  //       if (result.isConfirmed) {
-  //         navigate("/login");
-  //       }
-  //     });
-  //     return;
-  //   }
+    const requestData = {
+      userName: user.displayName,
+      userEmail: user.email,
+      mealId: meal._id,
+      mealTitle: meal.title,
+      distributorName: meal.distributorName,
+      status: "Pending",
+      requestTime: new Date().toISOString(),
+    };
 
-  //   const requestData = {
-  //     userName: user.displayName,
-  //     userEmail: user.email,
-  //     mealId: meal._id,
-  //     mealTitle: meal.title,
-  //     distributorName: meal.distributorName,
-  //     status: "Pending",
-  //     requestTime: new Date().toISOString(),
-  //   };
+    try {
+      const res = await fetch("http://localhost:3000/api/mealRequests", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(requestData),
+      });
 
-  //   try {
-  //     const res = await fetch("http://localhost:3000/api/mealRequests", {
-  //       method: "POST",
-  //       headers: { "Content-Type": "application/json" },
-  //       body: JSON.stringify(requestData),
-  //     });
+      if (res.ok) {
+        Swal.fire({
+          title: "Request Submitted",
+          text: "Request is pending approval.",
+          icon: "success",
+          timer: 2000,
+          showConfirmButton: false,
+        });
+      } else {
+        Swal.fire("Failed to submit request", "", "error");
+      }
+    } catch (error) {
+      console.error(error);
+      Swal.fire("Something went wrong", "", "error");
+    }
+  };
 
-  //     if (res.ok) {
-  //       Swal.fire({
-  //         title: "Request Submitted",
-  //         text: "Redirecting to checkout for subscription.",
-  //         icon: "success",
-  //         timer: 2000,
-  //         showConfirmButton: false,
-  //       });
-  //       navigate(`/checkout/${meal._id}`);
-  //     } else {
-  //       Swal.fire("Failed to submit request", "", "error");
-  //     }
-  //   } catch (error) {
-  //     console.error(error);
-  //     Swal.fire("Something went wrong", "", "error");
-  //   }
-  // };
-
+  // ✅ Handle Add Review
   const handleAddReview = () => {
     if (newReview.trim()) {
       setReviews([...reviews, newReview.trim()]);

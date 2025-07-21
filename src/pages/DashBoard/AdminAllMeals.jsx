@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { FaTrashAlt, FaEye, FaEdit, FaSortAmountDown } from "react-icons/fa";
+import { useNavigate } from "react-router";
+import Swal from "sweetalert2";
 
 const fetchMeals = async (sortBy = "") => {
   const url = `http://localhost:3000/api/meals${sortBy ? `?sort=${sortBy}` : ""}`;
@@ -14,6 +16,7 @@ const fetchMeals = async (sortBy = "") => {
 const AdminAllMeals = () => {
   const [sortField, setSortField] = useState("");
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
 
   const {
     data: meals = [],
@@ -27,29 +30,35 @@ const AdminAllMeals = () => {
   });
 
   const handleDelete = async (mealId) => {
-    if (!window.confirm("Are you sure you want to delete this meal?")) return;
+    const result = await Swal.fire({
+      title: "Are you sure?",
+      text: "You won't be able to revert this!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#810000",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Yes, delete it!",
+    });
+
+    if (!result.isConfirmed) return;
 
     try {
       const res = await fetch(`http://localhost:3000/api/meals/${mealId}`, {
         method: "DELETE",
       });
       if (res.ok) {
-        alert("Meal deleted successfully");
+        Swal.fire("Deleted!", "Meal has been deleted.", "success");
         queryClient.invalidateQueries(["meals"]);
       } else {
-        alert("Failed to delete meal");
+        Swal.fire("Failed!", "Failed to delete meal.", "error");
       }
     } catch {
-      alert("Error deleting meal");
+      Swal.fire("Error!", "Something went wrong.", "error");
     }
   };
 
   const handleUpdate = (mealId) => {
-    window.location.href = `/update-meal/${mealId}`;
-  };
-
-  const handleView = (mealId) => {
-    window.location.href = `/meals/${mealId}`;
+    navigate(`/update-meal/${mealId}`);
   };
 
   if (isLoading) return <p className="text-center py-8">Loading meals...</p>;
@@ -119,7 +128,7 @@ const AdminAllMeals = () => {
                   <td className="p-3 text-center">
                     <button
                       onClick={() => handleUpdate(_id)}
-                      className="flex items-center gap-2 bg-red-50 text-blue-900 px-4 py-1 rounded-lg hover:bg-red-800 transition"
+                      className="flex items-center gap-2 bg-red-50 text-blue-900 px-4 py-1 rounded-lg hover:bg-blue-200 transition"
                     >
                       <FaEdit size={18} />Update
                     </button>
@@ -127,22 +136,15 @@ const AdminAllMeals = () => {
                   <td className="p-3 text-center">
                     <button
                       onClick={() => handleDelete(_id)}
-                      className="flex items-center gap-2 bg-red-50 text-red-800 px-4 py-1 rounded-lg hover:bg-red-800 transition"
+                      className="flex items-center gap-2 bg-red-50 text-red-800 px-4 py-1 rounded-lg hover:bg-red-200 transition"
                     >
                       <FaTrashAlt size={18} />Delete
                     </button>
                   </td>
                   <td className="p-3 text-center">
-                    {/* <button
-                      onClick={() => handleView(_id)}
-                      className="flex items-center gap-2 text-[#810000] hover:text-[#a30000] rounded-full p-2 transition"
-                      title="View"
-                    >
-                      <FaEye size={18} />Details
-                    </button> */}
                     <button
-                      onClick={() => handleView(_id)}
-                      className="flex items-center gap-2 bg-red-50 text-[#810000] px-4 py-1 rounded-lg  hover:text-[#a30000]transition"
+                      onClick={() => navigate(`/meal/${_id}`)}
+                      className="flex items-center gap-2 bg-red-50 text-[#810000] px-4 py-1 rounded-lg hover:bg-red-200 transition"
                     >
                       <FaEye size={18} />Details
                     </button>
