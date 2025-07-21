@@ -1,28 +1,9 @@
 import React, { useState } from "react";
 import { FaStar, FaUtensils, FaCoffee, FaHamburger, FaConciergeBell } from "react-icons/fa";
 import { useNavigate } from "react-router";
+import { useQuery } from "@tanstack/react-query";
 
-const mealsData = {
-  Breakfast: [
-    { id: "b1", title: "Pancakes Delight", image: "https://i.postimg.cc/zBLvzNPc/top-view-table-full-delicious-food-composition-23-2149141352.avif", rating: 4.5, price: "$5.99" },
-    { id: "b2", title: "Healthy Oats", image: "https://i.postimg.cc/zBLvzNPc/top-view-table-full-delicious-food-composition-23-2149141352.avif", rating: 4.2, price: "$4.50" },
-    { id: "b3", title: "Fresh Sandwich", image: "https://i.postimg.cc/zBLvzNPc/top-view-table-full-delicious-food-composition-23-2149141352.avif", rating: 4.0, price: "$6.00" },
-  ],
-  Lunch: [
-    { id: "l1", title: "Grilled Chicken", image: "https://i.postimg.cc/zBLvzNPc/top-view-table-full-delicious-food-composition-23-2149141352.avif", rating: 4.8, price: "$8.50" },
-    { id: "l2", title: "Pasta Special", image: "https://i.postimg.cc/zBLvzNPc/top-view-table-full-delicious-food-composition-23-2149141352.avif", rating: 4.6, price: "$7.99" },
-    { id: "l3", title: "Veggie Salad", image: "https://i.postimg.cc/zBLvzNPc/top-view-table-full-delicious-food-composition-23-2149141352.avif", rating: 4.4, price: "$6.25" },
-  ],
-  Dinner: [
-    { id: "d1", title: "Steak Dinner", image: "https://i.postimg.cc/zBLvzNPc/top-view-table-full-delicious-food-composition-23-2149141352.avif", rating: 4.9, price: "$12.99" },
-    { id: "d2", title: "Seafood Platter", image: "https://i.postimg.cc/zBLvzNPc/top-view-table-full-delicious-food-composition-23-2149141352.avif", rating: 4.7, price: "$14.50" },
-    { id: "d3", title: "Ramen Bowl", image: "https://i.postimg.cc/zBLvzNPc/top-view-table-full-delicious-food-composition-23-2149141352.avif", rating: 4.5, price: "$9.99" },
-  ],
-};
-
-const allMeals = [...mealsData.Breakfast, ...mealsData.Lunch, ...mealsData.Dinner];
-
-const MembershipCard = () => {
+const MealByCategory = () => {
     const [activeTab, setActiveTab] = useState("Breakfast");
     const navigate = useNavigate();
 
@@ -33,7 +14,16 @@ const MembershipCard = () => {
         All: <FaConciergeBell className="text-2xl text-white" />,
     };
 
-    const mealsToShow = activeTab === "All" ? allMeals : mealsData[activeTab];
+    const { data: meals = [], isLoading, isError } = useQuery({
+        queryKey: ["meals", activeTab],
+        queryFn: async () => {
+            const res = await fetch(`http://localhost:3000/api/meals?category=${activeTab}`);
+            return res.json();
+        },
+    });
+
+    if (isLoading) return <p className="text-center py-10 text-xl">Loading meals...</p>;
+    if (isError) return <p className="text-center py-10 text-xl text-red-500">Failed to fetch meals.</p>;
 
     return (
         <div className="container mx-auto bg-base-100 jost-font py-8 px-2 sm:px-4 md:px-6">
@@ -63,9 +53,9 @@ const MembershipCard = () => {
 
             {/* Meal Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 md:gap-10">
-                {mealsToShow.map((meal) => (
+                {meals.length > 0 ? meals.slice(0, 3).map((meal) => (
                     <div
-                        key={meal.id}
+                        key={meal._id}
                         className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition hover:-translate-y-1 duration-300 border-2 border-[#630000] flex flex-col"
                     >
                         <div className="overflow-hidden rounded-t-2xl">
@@ -80,19 +70,19 @@ const MembershipCard = () => {
                             <div className="flex items-center gap-1 sm:gap-2 text-yellow-500">
                                 <FaStar /> <span className="font-medium text-gray-700">{meal.rating}</span>
                             </div>
-                            <p className="text-base sm:text-lg font-semibold text-gray-700">{meal.price}</p>
+                            <p className="text-base sm:text-lg font-semibold text-gray-700">${meal.price}</p>
                             <button
-                                onClick={() => navigate(`/meal/${meal.id}`)}
+                                onClick={() => navigate(`/meal/${meal._id}`)}
                                 className="btn btn-outline bg-[#630000] text-white w-full rounded-full border-[#630000] hover:bg-white hover:text-[#630000] mt-auto"
                             >
                                 View Details
                             </button>
                         </div>
                     </div>
-                ))}
+                )) : <p className="text-center col-span-3 py-10 text-xl text-red-500">No meals found in this category.</p>}
             </div>
         </div>
     );
 };
 
-export default MembershipCard;
+export default MealByCategory;

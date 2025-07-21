@@ -1,36 +1,58 @@
-import React, { useState } from "react";
+import React from "react";
+import { useQuery } from "@tanstack/react-query";
+import { useContext } from "react";
+import { AuthContext } from "../../provider/AuthProvider";
+import Swal from "sweetalert2";
 
 const RequestedMeals = () => {
-  const [meals, setMeals] = useState([
-    {
-      id: 1,
-      title: "Grilled Chicken Salad",
-      likes: 34,
-      reviews_count: 12,
-      status: "Pending",
-    },
-    {
-      id: 2,
-      title: "Vegetarian Pizza",
-      likes: 50,
-      reviews_count: 20,
-      status: "Approved",
-    },
-    {
-      id: 3,
-      title: "Beef Steak",
-      likes: 23,
-      reviews_count: 9,
-      status: "Rejected",
-    },
-  ]);
+  const { user } = useContext(AuthContext);
 
-  const handleCancel = (id) => {
-    const confirm = window.confirm("Are you sure you want to cancel this meal request?");
-    if (confirm) {
-      setMeals(meals.filter((meal) => meal.id !== id));
+  const { data: meals = [], refetch } = useQuery({
+    queryKey: ["requestedMeals", user?.email],
+    queryFn: async () => {
+      if (!user?.email) return [];
+      const res = await fetch(`http://localhost:3000/api/mealRequests?userEmail=${user.email}`);
+      if (!res.ok) throw new Error("Failed to fetch requested meals");
+      return res.json();
+    },
+    enabled: !!user?.email,
+  });
+
+  const handleCancel = async (id) => {
+    const result = await Swal.fire({
+      title: "Are you sure?",
+      text: "You won't be able to revert this cancellation!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "Yes, cancel it!",
+    });
+
+    if (result.isConfirmed) {
+      try {
+        const res = await fetch(`http://localhost:3000/api/mealRequests/${id}`, {
+          method: "DELETE",
+        });
+        if (res.ok) {
+          Swal.fire("Cancelled!", "Your meal request has been cancelled.", "success");
+          refetch();
+        } else {
+          Swal.fire("Failed!", "Failed to cancel meal request.", "error");
+        }
+      } catch (error) {
+        Swal.fire("Error!", "Something went wrong.", "error");
+      }
     }
   };
+
+  if (!user) {
+    return <p className="text-center mt-10">Please login to see your requested meals.</p>;
+  }
+
+  if (meals.length === 0) {
+    return <p className="text-center mt-10">You have no meal requests.</p>;
+  }
 
   return (
     <div className="container mx-auto bg-white rounded-xl shadow-md p-8 mt-6">
@@ -51,10 +73,10 @@ const RequestedMeals = () => {
             </thead>
             <tbody>
               {meals.map((meal) => (
-                <tr key={meal.id} className="border-t border-gray-200">
-                  <td className="p-4">{meal.title}</td>
-                  <td className="p-4 text-center">{meal.likes}</td>
-                  <td className="p-4 text-center">{meal.reviews_count}</td>
+                <tr key={meal._id}>
+                  <td className="p-4">{meal.mealTitle || "No title"}</td>
+                  <td className="p-4 text-center">{meal.likes ?? 0}</td>
+                  <td className="p-4 text-center">{meal.reviews_count ?? 0}</td>
                   <td className="p-4 text-center">
                     <span
                       className={`px-3 py-1 rounded-full text-sm font-medium ${
@@ -70,7 +92,7 @@ const RequestedMeals = () => {
                   </td>
                   <td className="p-4 text-center">
                     <button
-                      onClick={() => handleCancel(meal.id)}
+                      onClick={() => handleCancel(meal._id)}
                       className="bg-red-400 text-white px-4 py-1 rounded-md hover:bg-red-800 transition"
                     >
                       Cancel
@@ -86,16 +108,13 @@ const RequestedMeals = () => {
       {/* Card layout for small devices */}
       <div className="md:hidden space-y-4">
         {meals.map((meal) => (
-          <div
-            key={meal.id}
-            className="border rounded-lg p-4 shadow-sm bg-gray-50"
-          >
-            <h3 className="text-lg font-semibold">{meal.title}</h3>
+          <div key={meal._id} className="border rounded-lg p-4 shadow-sm bg-gray-50">
+            <h3 className="text-lg font-semibold">{meal.mealTitle || "No title"}</h3>
             <p className="mt-2">
-              <span className="font-medium">Likes:</span> {meal.likes}
+              <span className="font-medium">Likes:</span> {meal.likes ?? 0}
             </p>
             <p>
-              <span className="font-medium">Reviews:</span> {meal.reviews_count}
+              <span className="font-medium">Reviews:</span> {meal.reviews_count ?? 0}
             </p>
             <p className="my-2">
               <span className="font-medium">Status:</span>{" "}
@@ -112,7 +131,7 @@ const RequestedMeals = () => {
               </span>
             </p>
             <button
-              onClick={() => handleCancel(meal.id)}
+              onClick={() => handleCancel(meal._id)}
               className="bg-red-400 text-white px-4 py-1 rounded-md hover:bg-red-800 transition w-full"
             >
               Cancel

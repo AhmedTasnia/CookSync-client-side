@@ -2,7 +2,6 @@ import React from "react";
 import { createBrowserRouter } from "react-router";
 import Root from "../pages/Root/root";
 import SignUp from "../Components/JoinUs/SignUp";
-import MealDetails from "../Components/MealDetails/MealDetails";
 import Register from "../Components/Register/Register";
 import AllMeals from "../AllMeals/AllMeals";
 import UpcomingMeals from "../UpcomingMeal/UpcomingMeal";
@@ -22,6 +21,7 @@ import ServedMeal from "../pages/DashBoard/ServedMeal";
 import MealUpcoming from "../pages/DashBoard/Mealupcoming";
 import CheckoutPage from "../Components/Checkout/Checkout";
 import AdminAllMeals from "../pages/DashBoard/AdminAllMeals";
+import MealDetails from "../MealDetails/MealDetails";
 
 export const router = createBrowserRouter([
   {
@@ -41,12 +41,12 @@ export const router = createBrowserRouter([
         element: <UpcomingMeals />,
       },
       {
-        path: "mealDetails",
-        element: <MealDetails />,
-      },
-      {
         path: "/checkout/:packageName",
         element: <CheckoutPage />,
+      },
+      {
+        path: "/meal/:id",
+        element: <MealDetails />,
       },
     ],
   },

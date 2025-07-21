@@ -20,6 +20,15 @@ const CheckoutPage = () => {
 
   const selectedPackage = packageDetails[packageName];
 
+  if (!selectedPackage) {
+    return (
+      <div className="max-w-xl mx-auto my-10">
+        <h2 className="text-3xl font-bold mb-6">Invalid Package</h2>
+        <p>Please select a valid package.</p>
+      </div>
+    );
+  }
+
   const { data: dbUser = {} } = useQuery({
     queryKey: ["user", user?.email],
     queryFn: async () => {
@@ -36,42 +45,48 @@ const CheckoutPage = () => {
     if (!stripe || !elements) return;
 
     setLoading(true);
-    const res = await fetch("http://localhost:3000/create-payment-intent", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ price: selectedPackage.price }),
-    });
-    const { clientSecret } = await res.json();
+    try {
+      const res = await fetch("http://localhost:3000/create-payment-intent", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ price: selectedPackage.price }),
+      });
+      const { clientSecret } = await res.json();
 
-    const { error, paymentIntent } = await stripe.confirmCardPayment(clientSecret, {
-      payment_method: { card: elements.getElement(CardElement) },
-    });
+      const { error, paymentIntent } = await stripe.confirmCardPayment(clientSecret, {
+        payment_method: { card: elements.getElement(CardElement) },
+      });
 
-    if (error) {
-      Swal.fire("Payment Failed", error.message, "error");
+      if (error) {
+        Swal.fire("Payment Failed", error.message, "error");
+        setLoading(false);
+        return;
+      }
+
+      await fetch(`http://localhost:3000/payments`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: user.email,
+          package: packageName,
+          badge: selectedPackage.badge,
+          price: selectedPackage.displayPrice,
+          transactionId: paymentIntent.id,
+        }),
+      });
+
+      Swal.fire({
+        icon: "success",
+        title: "Payment Successful!",
+        text: `You are now a ${selectedPackage.badge} member`,
+        confirmButtonColor: "#810000",
+      });
+    } catch (error) {
+      console.error(error);
+      Swal.fire("Something went wrong", "", "error");
+    } finally {
       setLoading(false);
-      return;
     }
-
-    await fetch(`http://localhost:3000/payments`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        email: user.email,
-        package: packageName,
-        badge: selectedPackage.badge,
-        price: selectedPackage.displayPrice,
-        transactionId: paymentIntent.id,
-      }),
-    });
-
-    Swal.fire({
-      icon: "success",
-      title: "Payment Successful!",
-      text: `You are now ${selectedPackage.badge} member`,
-      confirmButtonColor: "#810000",
-    });
-    setLoading(false);
   };
 
   return (
