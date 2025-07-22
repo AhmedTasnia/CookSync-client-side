@@ -13,7 +13,6 @@ const ManageUsers = () => {
   } = useQuery({
     queryKey: ["users", search],
     queryFn: async () => {
-      // Replace with your actual backend URL (http://localhost:3000 or deployed URL)
       const backendUrl = "http://localhost:3000";
 
       const res = await fetch(
@@ -44,7 +43,7 @@ const ManageUsers = () => {
   };
 
   return (
-    <div className="container mx-auto p-4 bg-white rounded-xl shadow-md mt-6">
+    <div className="container mx-auto p-4 jost-font bg-white rounded-xl shadow-md mt-6">
       <h2 className="text-2xl font-bold mb-4">Manage Users</h2>
 
       <input
@@ -85,7 +84,7 @@ const ManageUsers = () => {
                 ) : (
                   users.map((user) => (
                     <tr key={user._id} className="border-t">
-                      <td className="p-4">{user.username}</td>
+                      <td className="p-4">{user.name}</td>
                       <td className="p-4">{user.email}</td>
                       <td className="p-4 text-center">
                         {user.subscription || "Free"}
@@ -96,7 +95,7 @@ const ManageUsers = () => {
                         ) : (
                           <button
                             onClick={() => handleMakeAdmin(user._id)}
-                            className="bg-blue-500 text-white px-4 py-1 rounded-md hover:bg-blue-700 transition"
+                            className="bg-red-200 text-white px-4 py-1 rounded-md hover:bg-red-700 transition"
                           >
                             Make Admin
                           </button>

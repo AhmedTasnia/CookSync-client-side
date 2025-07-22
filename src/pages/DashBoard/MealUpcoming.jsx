@@ -238,15 +238,15 @@ const MealUpcoming = () => {
   };
 
   return (
-    <div className="max-w-6xl mx-auto p-6 jost-font bg-white rounded-2xl shadow-md">
-      <h2 className="text-3xl font-semibold mb-6 text-center text-[#810000]">
+    <div className="max-w-6xl mx-auto p-4 sm:p-6 jost-font bg-white rounded-2xl shadow-md">
+      <h2 className="text-2xl sm:text-3xl font-semibold mb-6 text-center text-[#810000]">
         Upcoming Meals
       </h2>
 
       <div className="flex justify-end mb-4">
         <button
           onClick={() => setShowModal(true)}
-          className="flex items-center gap-2 bg-[#810000] text-white px-4 py-2 rounded-lg hover:bg-[#a30000]"
+          className="flex items-center gap-2 bg-[#810000] text-white px-3 sm:px-4 py-2 rounded-lg hover:bg-[#a30000] text-sm sm:text-base"
         >
           <FaPlus /> Add Upcoming Meal
         </button>
@@ -258,13 +258,13 @@ const MealUpcoming = () => {
         <p className="text-center text-gray-500">No upcoming meals found.</p>
       ) : (
         <div className="overflow-x-auto">
-          <table className="min-w-full border-collapse border border-gray-300 rounded-lg overflow-hidden">
+          <table className="min-w-full border-collapse border border-gray-300 rounded-lg overflow-hidden text-sm sm:text-base">
             <thead className="bg-[#810000] text-white">
               <tr>
-                <th className="p-3 text-left">Meal Title</th>
-                <th className="p-3 text-center">Likes</th>
-                <th className="p-3 text-center">Category</th>
-                <th className="p-3 text-center">Publish</th>
+                <th className="p-2 sm:p-3 text-left">Meal Title</th>
+                <th className="p-2 sm:p-3 text-center">Likes</th>
+                <th className="p-2 sm:p-3 text-center">Category</th>
+                <th className="p-2 sm:p-3 text-center">Publish</th>
               </tr>
             </thead>
             <tbody>
@@ -273,13 +273,13 @@ const MealUpcoming = () => {
                   key={_id}
                   className="border-b border-red-800 hover:bg-gray-50 transition"
                 >
-                  <td className="p-3">{title}</td>
-                  <td className="p-3 text-center">{likes}</td>
-                  <td className="p-3 text-center">{category}</td>
-                  <td className="p-3 text-center">
+                  <td className="p-2 sm:p-3">{title}</td>
+                  <td className="p-2 sm:p-3 text-center">{likes}</td>
+                  <td className="p-2 sm:p-3 text-center">{category}</td>
+                  <td className="p-2 sm:p-3 text-center">
                     <button
                       onClick={() => handlePublish(_id)}
-                      className="flex items-center justify-center gap-2 bg-[#810000] text-white px-4 py-2 rounded-lg hover:bg-[#a30000]"
+                      className="flex items-center justify-center gap-2 bg-[#810000] text-white px-3 sm:px-4 py-2 rounded-lg hover:bg-[#a30000] text-xs sm:text-base"
                     >
                       <FaArrowUp /> Publish
                     </button>

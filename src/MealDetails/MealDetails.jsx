@@ -14,10 +14,9 @@ const MealDetails = () => {
   const [likes, setLikes] = useState(0);
   const [userLiked, setUserLiked] = useState(false);
   const [reviews, setReviews] = useState([]);
-  const [newReview, setNewReview] = useState("");  // <-- Review input state
+  const [newReview, setNewReview] = useState("");  
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // ✅ Fetch user with badge info
   const { data: dbUser = {} } = useQuery({
     queryKey: ["user", user?.email],
     queryFn: async () => {
@@ -47,7 +46,7 @@ const MealDetails = () => {
   const handleLike = async () => {
     if (!user) {
       Swal.fire("Please login first", "", "warning");
-      navigate("/login");
+      navigate("/SignUp");
       return;
     }
 
@@ -73,11 +72,10 @@ const MealDetails = () => {
     }
   };
 
-  // ✅ Restrict Meal Request if badge is not valid
   const handleRequestMeal = async () => {
     if (!user) {
       Swal.fire("Please login first", "", "warning");
-      navigate("/login");
+      navigate("/SignUp");
       return;
     }
 
@@ -126,7 +124,6 @@ const MealDetails = () => {
     }
   };
 
-  // === New: Submit review handler
   const handleAddReview = async () => {
     if (!user) {
       Swal.fire("Please login first", "", "warning");
@@ -154,7 +151,6 @@ const MealDetails = () => {
       });
 
       if (res.ok) {
-        // Update reviews locally to show instantly
         setReviews((prev) => [...prev, newReview.trim()]);
         setNewReview("");
         Swal.fire("Review added!", "", "success");

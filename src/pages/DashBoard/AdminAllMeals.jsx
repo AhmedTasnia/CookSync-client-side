@@ -15,6 +15,8 @@ const fetchMeals = async (sortBy = "") => {
 
 const AdminAllMeals = () => {
   const [sortField, setSortField] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
   const queryClient = useQueryClient();
   const navigate = useNavigate();
 
@@ -71,6 +73,12 @@ const AdminAllMeals = () => {
   if (meals.length === 0)
     return <p className="text-center py-8">No meals found.</p>;
 
+  // Pagination Logic
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentItems = meals.slice(indexOfFirstItem, indexOfLastItem);
+  const totalPages = Math.ceil(meals.length / itemsPerPage);
+
   return (
     <div className="max-w-6xl mx-auto p-6 bg-white rounded-2xl shadow-md">
       <h2 className="text-3xl font-semibold mb-6 text-center text-[#810000]">
@@ -108,7 +116,7 @@ const AdminAllMeals = () => {
             </tr>
           </thead>
           <tbody>
-            {meals.map(
+            {currentItems.map(
               ({
                 _id,
                 title,
@@ -159,7 +167,7 @@ const AdminAllMeals = () => {
 
       {/* Cards for Small Devices */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 lg:hidden mt-6">
-        {meals.map(
+        {currentItems.map(
           ({
             _id,
             title,
@@ -200,6 +208,27 @@ const AdminAllMeals = () => {
             </div>
           )
         )}
+      </div>
+
+      {/* Pagination Controls */}
+      <div className="flex justify-center items-center gap-4 mt-6">
+        <button
+          onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+          disabled={currentPage === 1}
+          className="px-4 py-2 bg-gray-100 rounded-md disabled:opacity-50"
+        >
+          Prev
+        </button>
+        <span className="font-medium">
+          Page {currentPage} of {totalPages}
+        </span>
+        <button
+          onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+          disabled={currentPage === totalPages}
+          className="px-4 py-2 bg-gray-100 rounded-md disabled:opacity-50"
+        >
+          Next
+        </button>
       </div>
     </div>
   );
