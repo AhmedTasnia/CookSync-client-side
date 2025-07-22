@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useContext } from "react";
 import { useParams, useNavigate } from "react-router";
+import { useQuery } from "@tanstack/react-query";
 import { FaThumbsUp, FaStar } from "react-icons/fa";
 import { AuthContext } from "../provider/AuthProvider";
 import Swal from "sweetalert2";
@@ -13,7 +14,18 @@ const MealDetails = () => {
   const [likes, setLikes] = useState(0);
   const [userLiked, setUserLiked] = useState(false);
   const [reviews, setReviews] = useState([]);
-  const [newReview, setNewReview] = useState("");
+  const [newReview, setNewReview] = useState("");  // <-- Review input state
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // ✅ Fetch user with badge info
+  const { data: dbUser = {} } = useQuery({
+    queryKey: ["user", user?.email],
+    queryFn: async () => {
+      const res = await fetch(`http://localhost:3000/users/${user.email}`);
+      return res.json();
+    },
+    enabled: !!user?.email,
+  });
 
   // Fetch meal details
   useEffect(() => {
@@ -31,7 +43,7 @@ const MealDetails = () => {
     return <p className="text-center my-10">Loading meal details...</p>;
   }
 
-  // ✅ Handle Like Function
+  // ✅ Handle Like
   const handleLike = async () => {
     if (!user) {
       Swal.fire("Please login first", "", "warning");
@@ -61,11 +73,22 @@ const MealDetails = () => {
     }
   };
 
-  // ✅ Handle Meal Request
+  // ✅ Restrict Meal Request if badge is not valid
   const handleRequestMeal = async () => {
     if (!user) {
       Swal.fire("Please login first", "", "warning");
       navigate("/login");
+      return;
+    }
+
+    if (!["Silver", "Gold", "Platinum"].includes(dbUser?.badge)) {
+      Swal.fire({
+        icon: "warning",
+        title: "Membership Required",
+        text: "You need a Silver, Gold, or Platinum badge to request meals.",
+        confirmButtonColor: "#810000",
+      });
+      navigate("/");
       return;
     }
 
@@ -103,11 +126,47 @@ const MealDetails = () => {
     }
   };
 
-  // ✅ Handle Add Review
-  const handleAddReview = () => {
-    if (newReview.trim()) {
-      setReviews([...reviews, newReview.trim()]);
-      setNewReview("");
+  // === New: Submit review handler
+  const handleAddReview = async () => {
+    if (!user) {
+      Swal.fire("Please login first", "", "warning");
+      navigate("/login");
+      return;
+    }
+
+    if (newReview.trim() === "") {
+      Swal.fire("Please enter a review before submitting.", "", "warning");
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      const res = await fetch(`http://localhost:3000/api/meals/${meal._id}/review`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userEmail: user.email,
+          userName: user.displayName,
+          review: newReview.trim(),
+          createdAt: new Date().toISOString(),
+        }),
+      });
+
+      if (res.ok) {
+        // Update reviews locally to show instantly
+        setReviews((prev) => [...prev, newReview.trim()]);
+        setNewReview("");
+        Swal.fire("Review added!", "", "success");
+      } else {
+        const data = await res.json();
+        Swal.fire("Error", data.message || "Failed to add review.", "error");
+      }
+    } catch (error) {
+      console.error(error);
+      Swal.fire("Error", "Something went wrong while adding the review.", "error");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -183,19 +242,22 @@ const MealDetails = () => {
           ))}
         </div>
 
-        <div className="flex gap-4">
-          <input
-            type="text"
-            placeholder="Write your review..."
-            className="input input-bordered w-full"
+        {/* Review input box */}
+        <div className="flex flex-col gap-3">
+          <textarea
+            rows={4}
+            placeholder="Write your review here..."
             value={newReview}
             onChange={(e) => setNewReview(e.target.value)}
-          />
+            className="textarea textarea-bordered resize-none"
+            disabled={isSubmitting}
+          ></textarea>
           <button
             onClick={handleAddReview}
-            className="btn bg-[#630000] hover:bg-[#810000] text-white px-8 rounded-full"
+            className="btn bg-[#630000] hover:bg-[#810000] text-white rounded-full px-6 self-end"
+            disabled={isSubmitting}
           >
-            Post
+            {isSubmitting ? "Submitting..." : "Add Review"}
           </button>
         </div>
       </div>

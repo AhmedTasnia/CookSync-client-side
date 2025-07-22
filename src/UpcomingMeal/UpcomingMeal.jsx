@@ -1,8 +1,9 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import { FaHeart } from "react-icons/fa";
 import { useQuery } from "@tanstack/react-query";
-
-const userRole = "Gold";
+import Swal from "sweetalert2";
+import { AuthContext } from "../provider/AuthProvider";
+import { Navigate } from "react-router";
 
 const fetchUpcomingMeals = async () => {
   const res = await fetch("http://localhost:3000/api/upcomingMeals");
@@ -13,21 +14,71 @@ const fetchUpcomingMeals = async () => {
 };
 
 const UpcomingMeals = () => {
+  const { user } = useContext(AuthContext);
   const [likedMeals, setLikedMeals] = useState([]);
 
-  const { data: meals = [], isLoading, isError } = useQuery({
+  // Fetch user badge
+  const { data: dbUser = {} } = useQuery({
+    queryKey: ["user", user?.email],
+    queryFn: async () => {
+      const res = await fetch(`http://localhost:3000/users/${user?.email}`);
+      return res.json();
+    },
+    enabled: !!user?.email,
+  });
+
+  const { data: meals = [], isLoading, isError, refetch } = useQuery({
     queryKey: ["upcomingMeals"],
     queryFn: fetchUpcomingMeals,
   });
 
-  const handleLike = (mealId) => {
-    if (!["Silver", "Gold", "Platinum"].includes(userRole)) {
-      alert("Only Premium members can like meals.");
+  const handleLike = async (mealId) => {
+    // if (!["Silver", "Gold", "Platinum"].includes(dbUser?.membership)) {
+    //   Swal.fire("Only Premium (Silver/Gold/Platinum) users can like meals.", "", "warning");
+    //   return;
+    // }
+
+    if (!user) {
+          Swal.fire("Please login first", "", "warning");
+          Navigate("/login");
+          return;
+        }
+    
+        if (!["Silver", "Gold", "Platinum"].includes(dbUser?.badge)) {
+          Swal.fire({
+            icon: "warning",
+            title: "Membership Required",
+            text: "You need a Silver, Gold, or Platinum badge to request meals.",
+            confirmButtonColor: "#810000",
+          });
+          Navigate("/");
+          return;
+        }
+
+    if (likedMeals.includes(mealId)) {
+      Swal.fire("You have already liked this meal.", "", "info");
       return;
     }
-    if (likedMeals.includes(mealId)) return;
 
-    setLikedMeals((prev) => [...prev, mealId]);
+    try {
+      const res = await fetch(`http://localhost:3000/api/upcomingMeals/${mealId}/like`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userEmail: user?.email }),
+      });
+
+      if (res.ok) {
+        Swal.fire("Liked!", "Your like has been recorded.", "success");
+        setLikedMeals((prev) => [...prev, mealId]);
+        refetch();
+      } else {
+        const data = await res.json();
+        Swal.fire("Error", data?.message || "Failed to like the meal.", "error");
+      }
+    } catch (error) {
+      console.error(error);
+      Swal.fire("Error", "Something went wrong while liking.", "error");
+    }
   };
 
   if (isLoading) {

@@ -3,10 +3,9 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { FaUtensils, FaCheckCircle, FaSearch } from "react-icons/fa";
 import Swal from "sweetalert2";
 
-// Fetch requested meals with optional search query
 const fetchRequestedMeals = async (search) => {
-  // Build URL with query params if search provided
-  const url = new URL("http://localhost:3000/api/requestedMeals");
+
+  const url = new URL("http://localhost:3000/api/requestedMeals/admin");
   if (search) {
     url.searchParams.append("search", search);
   }

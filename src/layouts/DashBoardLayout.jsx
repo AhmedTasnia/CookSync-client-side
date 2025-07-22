@@ -1,4 +1,4 @@
-import React, { useContext, useState } from "react";
+import React, { useContext, useState, useEffect } from "react";
 import { Link, NavLink, Outlet, useNavigate } from "react-router";
 import { AuthContext } from "../provider/AuthProvider";
 import {
@@ -17,9 +17,44 @@ const DashboardLayout = () => {
   const { user } = useContext(AuthContext);
   const navigate = useNavigate();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [role, setRole] = useState(null); // Will hold "admin" or "user"
 
-  const isAdmin = user?.email === "admin@gmail.com";
+  // Fetch user info including role from backend by email
+  useEffect(() => {
+    if (!user?.email) return;
 
+    const fetchUserRole = async () => {
+      try {
+        const res = await fetch(`http://localhost:3000/api/users?email=${encodeURIComponent(user.email)}`);
+        if (!res.ok) throw new Error("Failed to fetch user data");
+        const userData = await res.json();
+
+        if (userData && userData.role) {
+          setRole(userData.role);
+
+          // Navigate based on role
+          if (userData.role === "admin") {
+            navigate("/dashboard/adminProfile", { replace: true });
+          } else {
+            navigate("/dashboard/userProfile", { replace: true });
+          }
+        } else {
+          // If no role found, fallback to user dashboard
+          setRole("user");
+          navigate("/dashboard/userProfile", { replace: true });
+        }
+      } catch (error) {
+        console.error("Error fetching user role:", error);
+        // fallback navigation
+        setRole("user");
+        navigate("/dashboard/userProfile", { replace: true });
+      }
+    };
+
+    fetchUserRole();
+  }, [user, navigate]);
+
+  // Define links for admin and user
   const adminLinks = [
     { to: "/dashboard/adminProfile", label: "Admin Profile", icon: <FaUserCircle /> },
     { to: "/dashboard/manageUsers", label: "Manage Users", icon: <FaUsers /> },
@@ -40,6 +75,17 @@ const DashboardLayout = () => {
   const handleExit = () => {
     navigate("/");
   };
+
+  // Show loading or nothing until role is fetched
+  if (!role) {
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <p className="text-xl">Loading dashboard...</p>
+      </div>
+    );
+  }
+
+  const isAdmin = role === "admin";
 
   return (
     <div className="flex min-h-screen h-screen jost-font bg-gray-50 relative">

@@ -1,22 +1,40 @@
-import React from "react";
+import React, { useContext, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { useContext } from "react";
 import { AuthContext } from "../../provider/AuthProvider";
 import Swal from "sweetalert2";
 
 const RequestedMeals = () => {
   const { user } = useContext(AuthContext);
 
-  const { data: meals = [], refetch } = useQuery({
+  const {
+    data: meals = [],
+    refetch,
+    isLoading,
+    isError,
+  } = useQuery({
     queryKey: ["requestedMeals", user?.email],
     queryFn: async () => {
-      if (!user?.email) return [];
-      const res = await fetch(`http://localhost:3000/api/mealRequests?userEmail=${user.email}`);
+      if (!user?.email) {
+        console.log("⛔ Skipping fetch because user email is missing");
+        return [];
+      }
+      console.log("✅ Fetching requested meals for user email:", user.email);
+      const res = await fetch(
+        `http://localhost:3000/api/mealRequests?userEmail=${encodeURIComponent(
+          user.email
+        )}`
+      );
       if (!res.ok) throw new Error("Failed to fetch requested meals");
-      return res.json();
+      const data = await res.json();
+      console.log("✅ Fetched requested meals:", data);
+      return data;
     },
     enabled: !!user?.email,
   });
+
+  useEffect(() => {
+    console.log("⚙️ Meals state updated:", meals);
+  }, [meals]);
 
   const handleCancel = async (id) => {
     const result = await Swal.fire({
@@ -40,7 +58,7 @@ const RequestedMeals = () => {
         } else {
           Swal.fire("Failed!", "Failed to cancel meal request.", "error");
         }
-      } catch  {
+      } catch {
         Swal.fire("Error!", "Something went wrong.", "error");
       }
     }
@@ -48,6 +66,14 @@ const RequestedMeals = () => {
 
   if (!user) {
     return <p className="text-center mt-10">Please login to see your requested meals.</p>;
+  }
+
+  if (isLoading) {
+    return <p className="text-center mt-10">Loading your requested meals...</p>;
+  }
+
+  if (isError) {
+    return <p className="text-center mt-10 text-red-500">Failed to load requested meals.</p>;
   }
 
   if (meals.length === 0) {
