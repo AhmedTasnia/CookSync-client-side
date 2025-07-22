@@ -14,7 +14,7 @@ const MealDetails = () => {
   const [likes, setLikes] = useState(0);
   const [userLiked, setUserLiked] = useState(false);
   const [reviews, setReviews] = useState([]);
-  const [newReview, setNewReview] = useState("");  
+  const [newReview, setNewReview] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const { data: dbUser = {} } = useQuery({
@@ -26,13 +26,14 @@ const MealDetails = () => {
     enabled: !!user?.email,
   });
 
-  // Fetch meal details
+  // Fetch meal details including embedded reviews
   useEffect(() => {
     fetch(`http://localhost:3000/api/meals/${id}`)
       .then((res) => res.json())
       .then((data) => {
         setMeal(data);
         setLikes(data.likes || 0);
+        // Assume data.reviews is an array of review objects {userName, review, createdAt}
         setReviews(data.reviews || []);
       })
       .catch((err) => console.error(err));
@@ -42,7 +43,7 @@ const MealDetails = () => {
     return <p className="text-center my-10">Loading meal details...</p>;
   }
 
-  // ✅ Handle Like
+  // Handle Like
   const handleLike = async () => {
     if (!user) {
       Swal.fire("Please login first", "", "warning");
@@ -124,6 +125,7 @@ const MealDetails = () => {
     }
   };
 
+  // Add review: POST to /api/reviews with user + meal + review info
   const handleAddReview = async () => {
     if (!user) {
       Swal.fire("Please login first", "", "warning");
@@ -138,20 +140,27 @@ const MealDetails = () => {
 
     setIsSubmitting(true);
 
+    const reviewPayload = {
+      userEmail: user.email,
+      userName: user.displayName,
+      mealId: meal._id,
+      mealTitle: meal.title,
+      distributorName: meal.distributorName,
+      review: newReview.trim(),
+      createdAt: new Date().toISOString(),
+    };
+
     try {
-      const res = await fetch(`http://localhost:3000/api/meals/${meal._id}/review`, {
+      const res = await fetch(`http://localhost:3000/api/reviews`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          userEmail: user.email,
-          userName: user.displayName,
-          review: newReview.trim(),
-          createdAt: new Date().toISOString(),
-        }),
+        body: JSON.stringify(reviewPayload),
       });
 
       if (res.ok) {
-        setReviews((prev) => [...prev, newReview.trim()]);
+        const savedReview = await res.json();
+        // Append the newly saved review object (not just text)
+        setReviews((prev) => [...prev, savedReview]);
         setNewReview("");
         Swal.fire("Review added!", "", "success");
       } else {
@@ -231,11 +240,19 @@ const MealDetails = () => {
         </h2>
 
         <div className="space-y-4 mb-6">
-          {reviews.map((review, idx) => (
-            <div key={idx} className="bg-base-200 rounded-xl p-4 text-gray-700">
-              {review}
-            </div>
-          ))}
+          {reviews.length > 0 ? (
+            reviews.map(({ _id, userName, review, createdAt }) => (
+              <div key={_id} className="bg-base-200 rounded-xl p-4 text-gray-700">
+                <p className="font-semibold">{userName}</p>
+                <p className="italic text-sm text-gray-600">
+                  {new Date(createdAt).toLocaleString()}
+                </p>
+                <p className="mt-2">{review}</p>
+              </div>
+            ))
+          ) : (
+            <p className="text-gray-500">No reviews yet.</p>
+          )}
         </div>
 
         {/* Review input box */}

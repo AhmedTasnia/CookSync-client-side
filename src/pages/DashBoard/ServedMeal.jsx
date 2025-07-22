@@ -4,7 +4,6 @@ import { FaUtensils, FaCheckCircle, FaSearch } from "react-icons/fa";
 import Swal from "sweetalert2";
 
 const fetchRequestedMeals = async (search) => {
-
   const url = new URL("http://localhost:3000/api/requestedMeals/admin");
   if (search) {
     url.searchParams.append("search", search);
