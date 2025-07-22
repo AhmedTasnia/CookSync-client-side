@@ -72,7 +72,7 @@ const AdminAllMeals = () => {
     return <p className="text-center py-8">No meals found.</p>;
 
   return (
-    <div className="max-w-6xl jost-font mx-auto p-6 bg-white rounded-2xl shadow-md">
+    <div className="max-w-6xl mx-auto p-6 bg-white rounded-2xl shadow-md">
       <h2 className="text-3xl font-semibold mb-6 text-center text-[#810000]">
         All Meals
       </h2>
@@ -92,7 +92,8 @@ const AdminAllMeals = () => {
         </button>
       </div>
 
-      <div className="overflow-x-auto">
+      {/* Table for Large Devices */}
+      <div className="overflow-x-auto hidden lg:block">
         <table className="min-w-full border-collapse border border-gray-300 rounded-lg overflow-hidden">
           <thead className="bg-[#810000] text-white">
             <tr>
@@ -154,6 +155,51 @@ const AdminAllMeals = () => {
             )}
           </tbody>
         </table>
+      </div>
+
+      {/* Cards for Small Devices */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 lg:hidden mt-6">
+        {meals.map(
+          ({
+            _id,
+            title,
+            likes,
+            reviews_count,
+            rating,
+            distributorName,
+          }) => (
+            <div
+              key={_id}
+              className="border rounded-xl shadow-md p-4 space-y-2"
+            >
+              <h3 className="text-xl font-semibold text-[#810000]">{title}</h3>
+              <p>Likes: <span className="font-medium">{likes}</span></p>
+              <p>Reviews: <span className="font-medium">{reviews_count}</span></p>
+              <p>Rating: <span className="font-medium">{rating.toFixed(1)}</span></p>
+              <p>Distributor: <span className="font-medium">{distributorName}</span></p>
+              <div className="flex gap-2 flex-wrap">
+                <button
+                  onClick={() => handleUpdate(_id)}
+                  className="flex items-center gap-1 bg-blue-50 text-blue-900 px-3 py-1 rounded-lg hover:bg-blue-100 text-sm"
+                >
+                  <FaEdit /> Update
+                </button>
+                <button
+                  onClick={() => handleDelete(_id)}
+                  className="flex items-center gap-1 bg-red-50 text-red-800 px-3 py-1 rounded-lg hover:bg-red-100 text-sm"
+                >
+                  <FaTrashAlt /> Delete
+                </button>
+                <button
+                  onClick={() => navigate(`/meal/${_id}`)}
+                  className="flex items-center gap-1 bg-red-50 text-[#810000] px-3 py-1 rounded-lg hover:bg-red-100 text-sm"
+                >
+                  <FaEye /> Details
+                </button>
+              </div>
+            </div>
+          )
+        )}
       </div>
     </div>
   );

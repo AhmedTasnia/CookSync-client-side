@@ -44,32 +44,63 @@ const PaymentHistory = () => {
           <p className="text-lg">No payment history found yet.</p>
         </div>
       ) : (
-        <div className="overflow-x-auto">
-          <table className="w-full border border-gray-200 rounded-lg">
-            <thead className="bg-gray-100">
-              <tr>
-                <th className="p-3 border">#</th>
-                <th className="p-3 border">Meal Title</th>
-                <th className="p-3 border">Amount</th>
-                <th className="p-3 border">Transaction ID</th>
-                <th className="p-3 border">Date</th>
-              </tr>
-            </thead>
-            <tbody>
-              {payments.map((payment, index) => (
-                <tr key={payment._id} className="text-center">
-                  <td className="p-3 border">{index + 1}</td>
-                  <td className="p-3 border">{payment.mealTitle || "N/A"}</td>
-                  <td className="p-3 border">{payment.price}</td>
-                  <td className="p-3 border">{payment.transactionId}</td>
-                  <td className="p-3 border">
-                    {new Date(payment.date).toLocaleDateString()}
-                  </td>
+        <>
+          {/* Table for md+ screens */}
+          <div className="overflow-x-auto hidden md:block">
+            <table className="w-full border border-gray-200 rounded-lg">
+              <thead className="bg-gray-100">
+                <tr>
+                  <th className="p-3 border">#</th>
+                  <th className="p-3 border">Meal Title</th>
+                  <th className="p-3 border">Amount</th>
+                  <th className="p-3 border">Transaction ID</th>
+                  <th className="p-3 border">Date</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody>
+                {payments.map((payment, index) => (
+                  <tr key={payment._id} className="text-center">
+                    <td className="p-3 border">{index + 1}</td>
+                    <td className="p-3 border">{payment.mealTitle || "N/A"}</td>
+                    <td className="p-3 border">{payment.price}</td>
+                    <td className="p-3 border">{payment.transactionId}</td>
+                    <td className="p-3 border">
+                      {new Date(payment.date).toLocaleDateString()}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          {/* Cards for small screens */}
+          <div className="md:hidden flex flex-col gap-4">
+            {payments.map((payment, index) => (
+              <div
+                key={payment._id}
+                className="border rounded-lg shadow p-4 bg-gray-50"
+              >
+                <div className="flex justify-between mb-2">
+                  <span className="font-semibold">#{index + 1}</span>
+                  <span className="text-xs text-gray-400">
+                    {new Date(payment.date).toLocaleDateString()}
+                  </span>
+                </div>
+                <div className="mb-1">
+                  <span className="font-semibold">Meal Title: </span>
+                  {payment.mealTitle || "N/A"}
+                </div>
+                <div className="mb-1">
+                  <span className="font-semibold">Amount: </span>
+                  {payment.price}
+                </div>
+                <div className="mb-1">
+                  <span className="font-semibold">Transaction ID: </span>
+                  {payment.transactionId}
+                </div>
+              </div>
+            ))}
+          </div>
+        </>
       )}
     </div>
   );

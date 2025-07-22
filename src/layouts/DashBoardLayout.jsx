@@ -1,4 +1,4 @@
-import React, { useContext } from "react";
+import React, { useContext, useState } from "react";
 import { Link, NavLink, Outlet, useNavigate } from "react-router";
 import { AuthContext } from "../provider/AuthProvider";
 import {
@@ -9,15 +9,16 @@ import {
   FaComments,
   FaMoneyCheckAlt,
   FaSignOutAlt,
+  FaBars,
+  FaTimes,
 } from "react-icons/fa";
 
 const DashboardLayout = () => {
   const { user } = useContext(AuthContext);
   const navigate = useNavigate();
-
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   const isAdmin = user?.email === "admin@gmail.com";
-
 
   const adminLinks = [
     { to: "/dashboard/adminProfile", label: "Admin Profile", icon: <FaUserCircle /> },
@@ -41,10 +42,20 @@ const DashboardLayout = () => {
   };
 
   return (
-    <div className="flex min-h-screen jost-font bg-gray-50">
+    <div className="flex min-h-screen h-screen jost-font bg-gray-50 relative">
+      {/* Hamburger for small devices */}
+      <div className="lg:hidden absolute top-4 left-4 z-50">
+        <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="text-2xl text-[#810000]">
+          {isSidebarOpen ? <FaTimes /> : <FaBars />}
+        </button>
+      </div>
+
       {/* Sidebar */}
-      <aside className="w-64 bg-[#1B1717] text-white shadow-md flex flex-col p-6 justify-between">
-        {/* Logo */}
+      <aside
+        className={`fixed z-40 lg:static top-0 left-0 h-screen w-64 bg-[#1B1717] text-white p-6 transform ${
+          isSidebarOpen ? "translate-x-0" : "-translate-x-full"
+        } lg:translate-x-0 transition-transform duration-300 ease-in-out flex flex-col justify-between overflow-y-auto`}
+      >
         <div>
           <Link to="/" className="flex items-center gap-2">
             <img
@@ -52,12 +63,11 @@ const DashboardLayout = () => {
               alt="logo"
               className="h-15 w-12 rounded-full object-cover"
             />
-            <h1 className="text-xl font-bold  lg:block">
+            <h1 className="text-xl font-bold">
               Cook <span className="text-3xl text-[#810000]">Sync</span>
             </h1>
           </Link>
 
-          {/* User Image Center */}
           <div className="flex flex-col items-center mb-10 mt-10">
             <img
               src={user?.photoURL || "https://i.postimg.cc/3x1f5z6C/user.png"}
@@ -68,18 +78,18 @@ const DashboardLayout = () => {
             <p className="text-sm text-gray-300">{user?.email || "user@example.com"}</p>
           </div>
 
-          {/* Navigation Links */}
           <nav className="flex-1">
             <ul className="space-y-3">
               {(isAdmin ? adminLinks : userLinks).map(({ to, label, icon }) => (
                 <li key={to}>
                   <NavLink
                     to={to}
+                    onClick={() => setIsSidebarOpen(false)}
                     className={({ isActive }) =>
                       `flex items-center gap-3 px-4 py-2 rounded-full transition ${
                         isActive
                           ? "bg-[#810000] text-white"
-                          : "text-gray-700 hover:bg-gray-200 hover:text-gray-900"
+                          : "text-gray-300 hover:bg-gray-700 hover:text-white"
                       }`
                     }
                   >
@@ -92,10 +102,9 @@ const DashboardLayout = () => {
           </nav>
         </div>
 
-        {/* Exit Button */}
         <button
           onClick={handleExit}
-          className="flex items-center justify-center gap-2 text-red-600 hover:text-red-700 font-semibold px-4 py-2 mt-6 rounded-full border border-red-500 hover:bg-red-100 transition"
+          className="flex items-center justify-center gap-2 text-red-400 hover:text-red-500 font-semibold px-4 py-2 mt-6 rounded-full border border-red-400 hover:bg-red-800 hover:bg-opacity-10 transition"
         >
           <FaSignOutAlt size={18} />
           Exit
@@ -103,7 +112,7 @@ const DashboardLayout = () => {
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 p-8 overflow-auto">
+      <main className="flex-1 h-screen overflow-y-auto p-4 lg:p-8">
         <Outlet />
       </main>
     </div>
