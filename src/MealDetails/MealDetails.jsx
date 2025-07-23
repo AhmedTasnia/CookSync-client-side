@@ -1,76 +1,122 @@
-import React, { useEffect, useState, useContext } from "react";
+import React, { useContext, useState } from "react";
 import { useParams, useNavigate } from "react-router";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { FaThumbsUp, FaStar } from "react-icons/fa";
 import { AuthContext } from "../provider/AuthProvider";
 import Swal from "sweetalert2";
+
+const fetchMealById = async (id) => {
+  const res = await fetch(`http://localhost:3000/api/meals/${id}`);
+  if (!res.ok) throw new Error("Failed to fetch meal details");
+  return res.json();
+};
+
+const fetchUserByEmail = async (email) => {
+  const res = await fetch(`http://localhost:3000/users/${email}`);
+  return res.json();
+};
+
+const fetchReviews = async (mealId) => {
+  const res = await fetch(`http://localhost:3000/api/reviews/${mealId}`);
+  if (!res.ok) throw new Error("Failed to fetch reviews");
+  return res.json();
+};
+
+const updateMealDetails = async (mealId, updateData) => {
+  const res = await fetch(`http://localhost:3000/api/meals/${mealId}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(updateData),
+  });
+  if (!res.ok) throw new Error("Failed to update meal");
+  return res.json();
+};
 
 const MealDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { user } = useContext(AuthContext);
-
-  const [meal, setMeal] = useState(null);
-  const [likes, setLikes] = useState(0);
-  const [userLiked, setUserLiked] = useState(false);
-  const [reviews, setReviews] = useState([]);
+  const queryClient = useQueryClient();
   const [newReview, setNewReview] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const { data: meal, isLoading, isError } = useQuery({
+    queryKey: ["meal", id],
+    queryFn: () => fetchMealById(id),
+  });
 
   const { data: dbUser = {} } = useQuery({
     queryKey: ["user", user?.email],
-    queryFn: async () => {
-      const res = await fetch(`http://localhost:3000/users/${user.email}`);
-      return res.json();
-    },
+    queryFn: () => fetchUserByEmail(user.email),
     enabled: !!user?.email,
   });
 
-  // Fetch meal details including embedded reviews
-  useEffect(() => {
-    fetch(`http://localhost:3000/api/meals/${id}`)
-      .then((res) => res.json())
-      .then((data) => {
-        setMeal(data);
-        setLikes(data.likes || 0);
-        // Assume data.reviews is an array of review objects {userName, review, createdAt}
-        setReviews(data.reviews || []);
-      })
-      .catch((err) => console.error(err));
-  }, [id]);
+  const { data: reviews = [], refetch: refetchReviews } = useQuery({
+    queryKey: ["reviews", id],
+    queryFn: () => fetchReviews(id),
+  });
 
-  if (!meal) {
-    return <p className="text-center my-10">Loading meal details...</p>;
-  }
+  const likeMeal = useMutation({
+    mutationFn: async () => {
+      const res = await fetch(`http://localhost:3000/api/meals/${id}/like`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userEmail: user.email }),
+      });
+      if (!res.ok) throw new Error("Failed to like");
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries(["meal", id]);
+    },
+  });
 
-  // Handle Like
-  const handleLike = async () => {
+  const updateMeal = useMutation({
+    mutationFn: ({ mealId, updateData }) => updateMealDetails(mealId, updateData),
+    onSuccess: () => {
+      queryClient.invalidateQueries(["meal", id]);
+    },
+    onError: () => {
+      Swal.fire("Error", "Failed to update meal details.", "error");
+    },
+  });
+
+  const addReview = useMutation({
+    mutationFn: async (review) => {
+      const res = await fetch(`http://localhost:3000/api/reviews`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(review),
+      });
+      if (!res.ok) throw new Error("Failed to add review");
+      return res.json();
+    },
+    onSuccess: () => {
+      setNewReview("");
+      refetchReviews();
+
+      // Update meal review count after successfully adding a review
+      updateMeal.mutate({
+        mealId: id,
+        updateData: { reviewCount: (meal.reviewCount || 0) + 1 },
+      });
+
+      Swal.fire("Review added!", "", "success");
+    },
+    onError: () => {
+      Swal.fire("Error", "Failed to add review.", "error");
+    },
+  });
+
+  if (isLoading) return <p className="text-center my-10">Loading meal details...</p>;
+  if (isError) return <p className="text-center my-10">Error loading meal details</p>;
+
+  const handleLike = () => {
     if (!user) {
       Swal.fire("Please login first", "", "warning");
       navigate("/SignUp");
       return;
     }
-
-    if (userLiked) return;
-
-    try {
-      const res = await fetch(`http://localhost:3000/api/meals/${meal._id}/like`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userEmail: user.email }),
-      });
-
-      if (res.ok) {
-        setLikes((prev) => prev + 1);
-        setUserLiked(true);
-      } else {
-        const data = await res.json();
-        Swal.fire("Error", data.message || "Failed to like the meal.", "error");
-      }
-    } catch (error) {
-      console.error(error);
-      Swal.fire("Error", "Something went wrong while liking.", "error");
-    }
+    likeMeal.mutate();
   };
 
   const handleRequestMeal = async () => {
@@ -125,8 +171,7 @@ const MealDetails = () => {
     }
   };
 
-  // Add review: POST to /api/reviews with user + meal + review info
-  const handleAddReview = async () => {
+  const handleAddReview = () => {
     if (!user) {
       Swal.fire("Please login first", "", "warning");
       navigate("/login");
@@ -138,8 +183,6 @@ const MealDetails = () => {
       return;
     }
 
-    setIsSubmitting(true);
-
     const reviewPayload = {
       userEmail: user.email,
       userName: user.displayName,
@@ -150,29 +193,7 @@ const MealDetails = () => {
       createdAt: new Date().toISOString(),
     };
 
-    try {
-      const res = await fetch(`http://localhost:3000/api/reviews`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(reviewPayload),
-      });
-
-      if (res.ok) {
-        const savedReview = await res.json();
-        // Append the newly saved review object (not just text)
-        setReviews((prev) => [...prev, savedReview]);
-        setNewReview("");
-        Swal.fire("Review added!", "", "success");
-      } else {
-        const data = await res.json();
-        Swal.fire("Error", data.message || "Failed to add review.", "error");
-      }
-    } catch (error) {
-      console.error(error);
-      Swal.fire("Error", "Something went wrong while adding the review.", "error");
-    } finally {
-      setIsSubmitting(false);
-    }
+    addReview.mutate(reviewPayload);
   };
 
   return (
@@ -186,14 +207,12 @@ const MealDetails = () => {
 
         <div className="p-8 space-y-5">
           <h1 className="text-4xl font-bold text-[#630000]">{meal.title}</h1>
-
           <div className="text-gray-700 flex gap-4 items-center">
             <span className="badge badge-outline text-[#630000]">
               Distributor: {meal.distributorName}
             </span>
             <span className="badge badge-outline">{meal.postTime}</span>
           </div>
-
           <p className="text-gray-600 leading-relaxed">{meal.description}</p>
 
           <div>
@@ -215,18 +234,14 @@ const MealDetails = () => {
           <div className="gap-4 mt-6 grid grid-cols-2">
             <button
               onClick={handleLike}
-              disabled={userLiked}
-              className={`btn rounded-full px-6 ${
-                userLiked
-                  ? "btn-disabled"
-                  : "bg-[#630000] text-white hover:bg-[#810000]"
-              }`}
+              className="btn bg-[#630000] text-white hover:bg-[#810000] rounded-full"
+              disabled={likeMeal.isLoading}
             >
-              <FaThumbsUp /> {likes} Likes
+              <FaThumbsUp /> {meal.likes || 0} Likes
             </button>
             <button
               onClick={handleRequestMeal}
-              className="btn bg-[#630000] hover:bg-[#810000] text-white rounded-full px-8"
+              className="btn bg-[#630000] hover:bg-[#810000] text-white rounded-full"
             >
               Request Meal
             </button>
@@ -255,7 +270,6 @@ const MealDetails = () => {
           )}
         </div>
 
-        {/* Review input box */}
         <div className="flex flex-col gap-3">
           <textarea
             rows={4}
@@ -263,14 +277,14 @@ const MealDetails = () => {
             value={newReview}
             onChange={(e) => setNewReview(e.target.value)}
             className="textarea textarea-bordered resize-none"
-            disabled={isSubmitting}
+            disabled={addReview.isLoading}
           ></textarea>
           <button
             onClick={handleAddReview}
             className="btn bg-[#630000] hover:bg-[#810000] text-white rounded-full px-6 self-end"
-            disabled={isSubmitting}
+            disabled={addReview.isLoading}
           >
-            {isSubmitting ? "Submitting..." : "Add Review"}
+            {addReview.isLoading ? "Submitting..." : "Add Review"}
           </button>
         </div>
       </div>

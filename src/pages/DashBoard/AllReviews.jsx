@@ -1,56 +1,110 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { FaTrashAlt, FaEye } from "react-icons/fa";
+import Swal from "sweetalert2";
+import { useNavigate } from "react-router";
+
+const fetchMeals = async () => {
+  const res = await fetch("http://localhost:3000/api/meals");
+  if (!res.ok) throw new Error("Failed to fetch meals");
+  return res.json();
+};
+
+const fetchReviews = async () => {
+  const res = await fetch("http://localhost:3000/api/reviews");
+  if (!res.ok) throw new Error("Failed to fetch reviews");
+  return res.json();
+};
+
+const deleteReview = async (id) => {
+  const res = await fetch(`http://localhost:3000/api/reviews/${id}`, {
+    method: "DELETE",
+  });
+  if (!res.ok) throw new Error("Failed to delete review");
+  return res.json();
+};
 
 const AllReviews = () => {
-  const [reviews, setReviews] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
+  const navigate = useNavigate();
 
-  // Fetch reviews from API (replace with your actual endpoint)
-  useEffect(() => {
-    const fetchReviews = async () => {
-      try {
-        const res = await fetch("/api/reviews"); // adjust your API path here
-        const data = await res.json();
-        setReviews(data);
-      } catch (error) {
-        console.error("Failed to fetch reviews", error);
-      } finally {
-        setLoading(false);
+  const {
+    data: meals = [],
+    isLoading: mealsLoading,
+    isError: mealsError,
+  } = useQuery({
+    queryKey: ["meals"],
+    queryFn: fetchMeals,
+  });
+
+  const {
+    data: reviews = [],
+    isLoading: reviewsLoading,
+    isError: reviewsError,
+  } = useQuery({
+    queryKey: ["reviews"],
+    queryFn: fetchReviews,
+  });
+
+  const mutation = useMutation({
+    mutationFn: deleteReview,
+    onSuccess: () => {
+      queryClient.invalidateQueries(["reviews"]);
+      Swal.fire("Deleted!", "Review has been deleted.", "success");
+    },
+    onError: () => {
+      Swal.fire("Error!", "Failed to delete review.", "error");
+    },
+  });
+
+  const handleDelete = (id) => {
+    Swal.fire({
+      title: "Are you sure?",
+      text: "This review will be deleted permanently.",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#aaa",
+      confirmButtonText: "Yes, delete it!",
+    }).then((result) => {
+      if (result.isConfirmed) {
+        mutation.mutate(id);
       }
-    };
-
-    fetchReviews();
-  }, []);
-
-  const handleDelete = async (reviewId) => {
-    if (!window.confirm("Are you sure you want to delete this review?")) return;
-
-    try {
-      const res = await fetch(`/api/reviews/${reviewId}`, {
-        method: "DELETE",
-      });
-
-      if (res.ok) {
-        setReviews((prev) => prev.filter((r) => r._id !== reviewId));
-        alert("Review deleted successfully");
-      } else {
-        alert("Failed to delete review");
-      }
-    } catch  {
-      alert("Error deleting review");
-    }
+    });
   };
 
   const handleViewMeal = (mealId) => {
-    // Redirect or open modal to view meal details
-    window.location.href = `/meals/${mealId}`;
+    if (mealId) {
+      navigate(`/meal/${mealId}`);
+    } else {
+      Swal.fire("Error", "Meal ID not found.", "error");
+    }
   };
 
-  if (loading) {
+  if (mealsLoading || reviewsLoading) {
+    return <div className="text-center py-10 text-gray-600">Loading data...</div>;
+  }
+
+  if (mealsError || reviewsError) {
     return (
-      <div className="text-center py-10 text-gray-600">Loading reviews...</div>
+      <div className="text-center py-10 text-red-500">
+        Failed to load data
+      </div>
     );
   }
+
+  // Create a map from mealId to meal data for quick lookup
+  const mealsMap = new Map(meals.map((meal) => [meal._id, meal]));
+
+  // Combine review info with corresponding meal's likes and reviews_count
+  const reviewsWithMealData = reviews.map((review) => {
+    const meal = mealsMap.get(review.mealId);
+    return {
+      ...review,
+      likes: meal?.likes || 0,
+      reviews_count: meal?.reviews_count || 0,
+    };
+  });
 
   return (
     <div className="max-w-5xl mx-auto p-6 bg-white rounded-2xl shadow-md">
@@ -72,11 +126,8 @@ const AllReviews = () => {
               </tr>
             </thead>
             <tbody>
-              {reviews.map(({ _id, mealTitle, likes, reviews_count, mealId }) => (
-                <tr
-                  key={_id}
-                  className="border-b border-gray-300 hover:bg-gray-50 transition"
-                >
+              {reviewsWithMealData.map(({ _id, mealTitle, likes, reviews_count, mealId }) => (
+                <tr key={_id} className="border-b border-gray-300 hover:bg-gray-50 transition">
                   <td className="p-3">{mealTitle}</td>
                   <td className="p-3 text-center">{likes}</td>
                   <td className="p-3 text-center">{reviews_count}</td>
