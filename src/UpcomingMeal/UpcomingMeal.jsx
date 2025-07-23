@@ -33,11 +33,6 @@ const UpcomingMeals = () => {
   });
 
   const handleLike = async (mealId) => {
-    // if (!["Silver", "Gold", "Platinum"].includes(dbUser?.membership)) {
-    //   Swal.fire("Only Premium (Silver/Gold/Platinum) users can like meals.", "", "warning");
-    //   return;
-    // }
-
     if (!user) {
           Swal.fire("Please login first", "", "warning");
           Navigate("/login");

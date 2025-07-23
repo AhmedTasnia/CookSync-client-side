@@ -1,8 +1,8 @@
-import React, { useState } from "react";
-import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
+import React, { useState, useEffect } from "react";
+import { useInfiniteQuery } from "@tanstack/react-query";
 import InfiniteScroll from "react-infinite-scroll-component";
 import { FaStar } from "react-icons/fa";
-import { useNavigate } from "react-router";
+import { useNavigate } from "react-router"; // make sure you're using react-router-dom v6+
 
 const fetchMeals = async ({ pageParam = 0, queryKey }) => {
   const [_key, searchQuery, category, priceRange] = queryKey;
@@ -11,13 +11,14 @@ const fetchMeals = async ({ pageParam = 0, queryKey }) => {
   const params = new URLSearchParams({
     search: searchQuery || "",
     category: category || "All",
-    priceMin: min,
-    priceMax: max,
-    skip: pageParam,
-    limit: 9,
+    priceMin: min.toString(),
+    priceMax: max.toString(),
+    skip: pageParam.toString(),
+    limit: "9",
   });
 
   const res = await fetch(`http://localhost:3000/api/meals?${params.toString()}`);
+
   if (!res.ok) {
     throw new Error("Failed to fetch meals");
   }
@@ -26,7 +27,6 @@ const fetchMeals = async ({ pageParam = 0, queryKey }) => {
 
 const AllMeals = () => {
   const navigate = useNavigate();
-  const queryClient = useQueryClient();
 
   const [searchQuery, setSearchQuery] = useState("");
   const [category, setCategory] = useState("All");
@@ -37,6 +37,10 @@ const AllMeals = () => {
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
+    refetch,
+    isLoading,
+    isError,
+    error,
   } = useInfiniteQuery({
     queryKey: ["meals", searchQuery, category, priceRange],
     queryFn: fetchMeals,
@@ -48,25 +52,18 @@ const AllMeals = () => {
     keepPreviousData: true,
   });
 
+  // Refetch when filters change
+  useEffect(() => {
+    refetch();
+  }, [searchQuery, category, priceRange, refetch]);
+
   const visibleMeals = data?.pages.flat() || [];
 
-  // 🔑 Reset on filter change
-  const resetQuery = () => {
-    queryClient.removeQueries({ queryKey: ["meals"] });
-  };
-
-  const handleSearchChange = (e) => {
-    setSearchQuery(e.target.value);
-    resetQuery();
-  };
-  const handleCategoryChange = (e) => {
-    setCategory(e.target.value);
-    resetQuery();
-  };
-  const handlePriceChange = (e) => {
+  // Handlers
+  const handleSearchChange = (e) => setSearchQuery(e.target.value);
+  const handleCategoryChange = (e) => setCategory(e.target.value);
+  const handlePriceChange = (e) =>
     setPriceRange(e.target.value.split("-").map(Number));
-    resetQuery();
-  };
 
   return (
     <div className="container mx-auto jost-font px-6 py-16">
@@ -107,49 +104,66 @@ const AllMeals = () => {
         </select>
       </div>
 
-      <InfiniteScroll
-        dataLength={visibleMeals.length}
-        next={() => fetchNextPage()}
-        hasMore={!!hasNextPage}
-        loader={
-          <h4 className="text-center text-gray-500 my-6">Loading more meals...</h4>
-        }
-      >
-        <div className="grid md:grid-cols-3 gap-8">
-          {visibleMeals.map((meal) => (
-            <div
-              key={meal._id}
-              className="border border-[#630000] rounded-xl bg-white shadow-md hover:shadow-lg transition hover:-translate-y-1"
-            >
-              <img
-                src={meal.image}
-                alt={meal.title}
-                className="w-full h-56 object-cover rounded-t-xl"
-              />
-              <div className="p-4 space-y-3">
-                <h2 className="font-bold text-lg text-[#630000]">{meal.title}</h2>
-                <p className="badge badge-outline">{meal.category}</p>
-                <div className="flex items-center gap-2 text-yellow-500">
-                  <FaStar />{" "}
-                  <span className="font-medium text-gray-700">{meal.rating}</span>
-                </div>
-                <p className="text-lg font-semibold text-gray-700">
-                  ${meal.price}
-                </p>
-                <button
-                  onClick={() => navigate(`/meal/${meal._id}`)}
-                  className="btn btn-outline bg-[#630000] text-white w-full rounded-full"
-                >
-                  View Details
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
-      </InfiniteScroll>
+      {isLoading && <p className="text-center">Loading meals...</p>}
+      {isError && (
+        <p className="text-center text-red-500">
+          Error: {error.message || "Something went wrong"}
+        </p>
+      )}
 
-      {isFetchingNextPage && (
-        <p className="text-center my-6 text-gray-500">Fetching more...</p>
+      {!isLoading && !isError && (
+        <>
+          <InfiniteScroll
+            dataLength={visibleMeals.length}
+            next={() => fetchNextPage()}
+            hasMore={!!hasNextPage}
+            loader={
+              <h4 className="text-center text-gray-500 my-6">
+                Loading more meals...
+              </h4>
+            }
+          >
+            <div className="grid md:grid-cols-3 gap-8">
+              {visibleMeals.map((meal) => (
+                <div
+                  key={meal._id}
+                  className="border border-[#630000] rounded-xl bg-white shadow-md hover:shadow-lg transition hover:-translate-y-1"
+                >
+                  <img
+                    src={meal.image}
+                    alt={meal.title}
+                    className="w-full h-56 object-cover rounded-t-xl"
+                  />
+                  <div className="p-4 space-y-3">
+                    <h2 className="font-bold text-lg text-[#630000]">
+                      {meal.title}
+                    </h2>
+                    <p className="badge badge-outline">{meal.category}</p>
+                    <div className="flex items-center gap-2 text-yellow-500">
+                      <FaStar />{" "}
+                      <span className="font-medium text-gray-700">
+                        {meal.rating}
+                      </span>
+                    </div>
+                    <p className="text-lg font-semibold text-gray-700">
+                      ${meal.price}
+                    </p>
+                    <button
+                      onClick={() => navigate(`/meal/${meal._id}`)}
+                      className="btn btn-outline bg-[#630000] text-white w-full rounded-full"
+                    >
+                      View Details
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </InfiniteScroll>
+
+          {isFetchingNextPage && (
+            <p className="text-center my-6 text-gray-500">Fetching more...</p>
+          )}
+        </>
       )}
     </div>
   );

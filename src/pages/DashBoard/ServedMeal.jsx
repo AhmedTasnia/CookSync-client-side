@@ -16,10 +16,9 @@ const fetchRequestedMeals = async (search) => {
 
 const ServeMeals = () => {
   const [search, setSearch] = useState("");
-  const [searchInput, setSearchInput] = useState(""); // controlled input for search field
+  const [searchInput, setSearchInput] = useState("");
   const queryClient = useQueryClient();
 
-  // Fetch meals with search param as queryKey to enable caching
   const {
     data: meals = [],
     isLoading,
@@ -29,9 +28,9 @@ const ServeMeals = () => {
     queryKey: ["requestedMeals", search],
     queryFn: () => fetchRequestedMeals(search),
     keepPreviousData: true,
+    staleTime: 5 * 60 * 1000, // 5 minutes cache
   });
 
-  // Mutation to serve meal (PATCH)
   const serveMutation = useMutation({
     mutationFn: async (mealRequestId) => {
       const res = await fetch(
@@ -46,7 +45,7 @@ const ServeMeals = () => {
     },
     onSuccess: () => {
       Swal.fire("Served!", "Meal marked as Delivered!", "success");
-      queryClient.invalidateQueries(["requestedMeals"]);
+      queryClient.invalidateQueries(["requestedMeals", search]);
     },
     onError: () => {
       Swal.fire("Error!", "Failed to serve meal", "error");
@@ -59,7 +58,7 @@ const ServeMeals = () => {
 
   const handleSearchSubmit = (e) => {
     e.preventDefault();
-    setSearch(searchInput.trim()); // trigger query refetch with new search
+    setSearch(searchInput.trim());
   };
 
   return (
@@ -74,8 +73,9 @@ const ServeMeals = () => {
         className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-2 mb-4 sm:mb-6"
       >
         <input
-          type="text"
+          type="search"
           placeholder="Search by user email or username..."
+          aria-label="Search by user email or username"
           value={searchInput}
           onChange={(e) => setSearchInput(e.target.value)}
           className="w-full sm:flex-grow px-4 py-2 border rounded-lg bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[#810000]"
@@ -83,7 +83,7 @@ const ServeMeals = () => {
         <button
           type="submit"
           className="flex items-center justify-center gap-2 bg-[#810000] text-white px-4 py-2 rounded-lg hover:bg-[#a30000] disabled:opacity-60"
-          disabled={isLoading}
+          disabled={isLoading || serveMutation.isLoading}
         >
           <FaSearch />
           <span className="hidden sm:inline">Search</span>
@@ -109,12 +109,12 @@ const ServeMeals = () => {
               </tr>
             </thead>
             <tbody>
-              {meals.map(({ _id, mealDetails, userEmail, userName, status }) => (
+              {meals.map(({ _id, mealTitle, userEmail, userName, status }) => (
                 <tr
                   key={_id}
                   className="border-b border-gray-300 hover:bg-gray-50 transition"
                 >
-                  <td className="p-2 sm:p-3 break-words max-w-xs">{mealDetails?.title || "No Title"}</td>
+                  <td className="p-2 sm:p-3 break-words max-w-xs">{mealTitle || "No Title"}</td>
                   <td className="p-2 sm:p-3 text-center break-all">{userEmail}</td>
                   <td className="p-2 sm:p-3 text-center break-words">{userName}</td>
                   <td className="p-2 sm:p-3 text-center">
