@@ -86,17 +86,11 @@ const AllReviews = () => {
   }
 
   if (mealsError || reviewsError) {
-    return (
-      <div className="text-center py-10 text-red-500">
-        Failed to load data
-      </div>
-    );
+    return <div className="text-center py-10 text-red-500">Failed to load data</div>;
   }
 
-  // Create a map from mealId to meal data for quick lookup
   const mealsMap = new Map(meals.map((meal) => [meal._id, meal]));
 
-  // Combine review info with corresponding meal's likes and reviews_count
   const reviewsWithMealData = reviews.map((review) => {
     const meal = mealsMap.get(review.mealId);
     return {
@@ -111,49 +105,78 @@ const AllReviews = () => {
       <h2 className="text-3xl font-semibold mb-6 text-center text-[#810000]">
         All Reviews
       </h2>
+
       {reviews.length === 0 ? (
         <p className="text-center text-gray-500">No reviews found.</p>
       ) : (
-        <div className="overflow-x-auto">
-          <table className="min-w-full border-collapse border border-gray-300 rounded-lg overflow-hidden">
-            <thead className="bg-[#810000] text-white">
-              <tr>
-                <th className="p-3 text-left">Meal Title</th>
-                <th className="p-3 text-center">Likes</th>
-                <th className="p-3 text-center">Reviews Count</th>
-                <th className="p-3 text-center">Delete</th>
-                <th className="p-3 text-center">View Meal</th>
-              </tr>
-            </thead>
-            <tbody>
-              {reviewsWithMealData.map(({ _id, mealTitle, likes, reviews_count, mealId }) => (
-                <tr key={_id} className="border-b border-gray-300 hover:bg-gray-50 transition">
-                  <td className="p-3">{mealTitle}</td>
-                  <td className="p-3 text-center">{likes}</td>
-                  <td className="p-3 text-center">{reviews_count}</td>
-                  <td className="p-3 text-center">
-                    <button
-                      onClick={() => handleDelete(_id)}
-                      className="text-red-600 hover:text-red-800 rounded-full p-2 transition"
-                      title="Delete Review"
-                    >
-                      <FaTrashAlt size={18} />
-                    </button>
-                  </td>
-                  <td className="p-3 text-center">
-                    <button
-                      onClick={() => handleViewMeal(mealId)}
-                      className="text-[#810000] hover:text-[#a30000] rounded-full p-2 transition"
-                      title="View Meal"
-                    >
-                      <FaEye size={18} />
-                    </button>
-                  </td>
+        <>
+          {/* ✅ Table for medium and larger screens */}
+          <div className="hidden md:block overflow-x-auto">
+            <table className="min-w-full border-collapse border border-gray-300 rounded-lg overflow-hidden">
+              <thead className="bg-[#810000] text-white">
+                <tr>
+                  <th className="p-3 text-left">Meal Title</th>
+                  <th className="p-3 text-center">Likes</th>
+                  <th className="p-3 text-center">Reviews Count</th>
+                  <th className="p-3 text-center">Delete</th>
+                  <th className="p-3 text-center">View Meal</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody>
+                {reviewsWithMealData.map(({ _id, mealTitle, likes, reviews_count, mealId }) => (
+                  <tr key={_id} className="border-b border-gray-300 hover:bg-gray-50 transition">
+                    <td className="p-3">{mealTitle}</td>
+                    <td className="p-3 text-center">{likes}</td>
+                    <td className="p-3 text-center">{reviews_count}</td>
+                    <td className="p-3 text-center">
+                      <button
+                        onClick={() => handleDelete(_id)}
+                        className="text-red-600 hover:text-red-800 rounded-full p-2 transition"
+                        title="Delete Review"
+                      >
+                        <FaTrashAlt size={18} />
+                      </button>
+                    </td>
+                    <td className="p-3 text-center">
+                      <button
+                        onClick={() => handleViewMeal(mealId)}
+                        className="text-[#810000] hover:text-[#a30000] rounded-full p-2 transition"
+                        title="View Meal"
+                      >
+                        <FaEye size={18} />
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {/* ✅ Card layout for small screens */}
+          <div className="md:hidden space-y-4">
+            {reviewsWithMealData.map(({ _id, mealTitle, likes, reviews_count, mealId }) => (
+              <div key={_id} className="border rounded-lg p-4 shadow-sm bg-gray-50">
+                <h3 className="text-lg font-semibold mb-2">{mealTitle}</h3>
+                <p className="mb-1"><span className="font-medium">Likes:</span> {likes}</p>
+                <p className="mb-2"><span className="font-medium">Reviews:</span> {reviews_count}</p>
+                <div className="flex justify-between mt-4">
+                  <button
+                    onClick={() => handleDelete(_id)}
+                    className="text-red-600 hover:text-red-800 flex items-center gap-1"
+                  >
+                    <FaTrashAlt /> Delete
+                  </button>
+                  <button
+                    onClick={() => handleViewMeal(mealId)}
+                    className="text-[#810000] hover:text-[#a30000] flex items-center gap-1"
+                  >
+                    <FaEye /> View
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </>
       )}
     </div>
   );

@@ -33,7 +33,6 @@ const AllReviews = () => {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
 
-  // Fetch reviews
   const {
     data: allReviews = [],
     isLoading: isLoadingReviews,
@@ -43,7 +42,6 @@ const AllReviews = () => {
     queryFn: fetchReviews,
   });
 
-  // Fetch meals
   const {
     data: meals = [],
     isLoading: isLoadingMeals,
@@ -98,7 +96,6 @@ const AllReviews = () => {
     );
   }
 
-  // Filter reviews by logged-in user
   const myReviews = allReviews.filter(
     (review) => review.userEmail === user?.email
   );
@@ -122,54 +119,96 @@ const AllReviews = () => {
       <h2 className="text-3xl font-semibold mb-6 text-center text-[#810000]">
         My Reviews
       </h2>
+
       {reviewsWithStats.length === 0 ? (
         <p className="text-center text-gray-500">No reviews found.</p>
       ) : (
-        <div className="overflow-x-auto">
-          <table className="min-w-full border-collapse border border-gray-300 rounded-lg overflow-hidden">
-            <thead className="bg-[#810000] text-white">
-              <tr>
-                <th className="p-3 text-left">Meal Title</th>
-                <th className="p-3 text-center">Likes</th>
-                <th className="p-3 text-center">Reviews Count</th>
-                <th className="p-3 text-center">Delete</th>
-                <th className="p-3 text-center">View Meal</th>
-              </tr>
-            </thead>
-            <tbody>
-              {reviewsWithStats.map(
-                ({ _id, mealTitle, likes, reviews_count, mealId }) => (
-                  <tr
-                    key={_id}
-                    className="border-b border-gray-300 hover:bg-gray-50 transition"
-                  >
-                    <td className="p-3">{mealTitle}</td>
-                    <td className="p-3 text-center">{likes}</td>
-                    <td className="p-3 text-center">{reviews_count}</td>
-                    <td className="p-3 text-center">
-                      <button
-                        onClick={() => handleDelete(_id)}
-                        className="text-red-600 hover:text-red-800 rounded-full p-2 transition"
-                        title="Delete Review"
-                      >
-                        <FaTrashAlt size={18} />
-                      </button>
-                    </td>
-                    <td className="p-3 text-center">
-                      <button
-                        onClick={() => handleViewMeal(mealId)}
-                        className="text-[#810000] hover:text-[#a30000] rounded-full p-2 transition"
-                        title="View Meal"
-                      >
-                        <FaEye size={18} />
-                      </button>
-                    </td>
-                  </tr>
-                )
-              )}
-            </tbody>
-          </table>
-        </div>
+        <>
+          {/* Table for medium and larger screens */}
+          <div className="hidden md:block overflow-x-auto">
+            <table className="min-w-full border-collapse border border-gray-300 rounded-lg overflow-hidden">
+              <thead className="bg-[#810000] text-white">
+                <tr>
+                  <th className="p-3 text-left">Meal Title</th>
+                  <th className="p-3 text-center">Likes</th>
+                  <th className="p-3 text-center">Reviews Count</th>
+                  <th className="p-3 text-center">Delete</th>
+                  <th className="p-3 text-center">View Meal</th>
+                </tr>
+              </thead>
+              <tbody>
+                {reviewsWithStats.map(
+                  ({ _id, mealTitle, likes, reviews_count, mealId }) => (
+                    <tr
+                      key={_id}
+                      className="border-b border-gray-300 hover:bg-gray-50 transition"
+                    >
+                      <td className="p-3">{mealTitle}</td>
+                      <td className="p-3 text-center">{likes}</td>
+                      <td className="p-3 text-center">{reviews_count}</td>
+                      <td className="p-3 text-center">
+                        <button
+                          onClick={() => handleDelete(_id)}
+                          className="text-red-600 hover:text-red-800 rounded-full p-2 transition"
+                          title="Delete Review"
+                        >
+                          <FaTrashAlt size={18} />
+                        </button>
+                      </td>
+                      <td className="p-3 text-center">
+                        <button
+                          onClick={() => handleViewMeal(mealId)}
+                          className="text-[#810000] hover:text-[#a30000] rounded-full p-2 transition"
+                          title="View Meal"
+                        >
+                          <FaEye size={18} />
+                        </button>
+                      </td>
+                    </tr>
+                  )
+                )}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Cards for small screens */}
+          <div className="md:hidden space-y-4">
+            {reviewsWithStats.map(
+              ({ _id, mealTitle, likes, reviews_count, mealId }) => (
+                <div
+                  key={_id}
+                  className="border rounded-xl p-4 shadow-sm bg-gray-50"
+                >
+                  <h3 className="text-lg font-semibold text-[#810000]">
+                    {mealTitle}
+                  </h3>
+                  <p className="text-sm text-gray-700">
+                    <strong>Likes:</strong> {likes}
+                  </p>
+                  <p className="text-sm text-gray-700">
+                    <strong>Review Count:</strong> {reviews_count}
+                  </p>
+                  <div className="flex justify-end gap-4 mt-3">
+                    <button
+                      onClick={() => handleViewMeal(mealId)}
+                      className="text-[#810000] hover:text-[#a30000]"
+                      title="View Meal"
+                    >
+                      <FaEye />
+                    </button>
+                    <button
+                      onClick={() => handleDelete(_id)}
+                      className="text-red-600 hover:text-red-800"
+                      title="Delete Review"
+                    >
+                      <FaTrashAlt />
+                    </button>
+                  </div>
+                </div>
+              )
+            )}
+          </div>
+        </>
       )}
     </div>
   );

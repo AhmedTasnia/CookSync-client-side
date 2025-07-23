@@ -1,40 +1,59 @@
-import React, { useContext, useEffect } from "react";
+import React, { useContext } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { AuthContext } from "../../provider/AuthProvider";
 import Swal from "sweetalert2";
+
+const fetchRequestedMeals = async (email) => {
+  const res = await fetch(
+    `http://localhost:3000/api/mealRequests?userEmail=${encodeURIComponent(email)}`
+  );
+  if (!res.ok) throw new Error("Failed to fetch requested meals");
+  return res.json();
+};
+
+const fetchAllMeals = async () => {
+  const res = await fetch("http://localhost:3000/api/meals");
+  if (!res.ok) throw new Error("Failed to fetch meals");
+  return res.json();
+};
+
+const fetchAllReviews = async () => {
+  const res = await fetch("http://localhost:3000/api/reviews");
+  if (!res.ok) throw new Error("Failed to fetch reviews");
+  return res.json();
+};
 
 const RequestedMeals = () => {
   const { user } = useContext(AuthContext);
 
   const {
-    data: meals = [],
+    data: requestedMeals = [],
     refetch,
-    isLoading,
-    isError,
+    isLoading: loadingRequests,
+    isError: errorRequests,
   } = useQuery({
     queryKey: ["requestedMeals", user?.email],
-    queryFn: async () => {
-      if (!user?.email) {
-        console.log("⛔ Skipping fetch because user email is missing");
-        return [];
-      }
-      console.log("✅ Fetching requested meals for user email:", user.email);
-      const res = await fetch(
-        `http://localhost:3000/api/mealRequests?userEmail=${encodeURIComponent(
-          user.email
-        )}`
-      );
-      if (!res.ok) throw new Error("Failed to fetch requested meals");
-      const data = await res.json();
-      console.log("✅ Fetched requested meals:", data);
-      return data;
-    },
+    queryFn: () => fetchRequestedMeals(user.email),
     enabled: !!user?.email,
   });
 
-  useEffect(() => {
-    console.log("⚙️ Meals state updated:", meals);
-  }, [meals]);
+  const {
+    data: allMeals = [],
+    isLoading: loadingMeals,
+    isError: errorMeals,
+  } = useQuery({
+    queryKey: ["allMeals"],
+    queryFn: fetchAllMeals,
+  });
+
+  const {
+    data: allReviews = [],
+    isLoading: loadingReviews,
+    isError: errorReviews,
+  } = useQuery({
+    queryKey: ["allReviews"],
+    queryFn: fetchAllReviews,
+  });
 
   const handleCancel = async (id) => {
     const result = await Swal.fire({
@@ -68,17 +87,30 @@ const RequestedMeals = () => {
     return <p className="text-center mt-10">Please login to see your requested meals.</p>;
   }
 
-  if (isLoading) {
+  if (loadingRequests || loadingMeals || loadingReviews) {
     return <p className="text-center mt-10">Loading your requested meals...</p>;
   }
 
-  if (isError) {
-    return <p className="text-center mt-10 text-red-500">Failed to load requested meals.</p>;
+  if (errorRequests || errorMeals || errorReviews) {
+    return <p className="text-center mt-10 text-red-500">Failed to load data.</p>;
   }
 
-  if (meals.length === 0) {
+  if (requestedMeals.length === 0) {
     return <p className="text-center mt-10">You have no meal requests.</p>;
   }
+
+  // Enrich requested meals with likes and review count
+  const enrichedMeals = requestedMeals.map((mealReq) => {
+    const meal = allMeals.find((m) => m._id === mealReq.mealId);
+    const reviewsCount = allReviews.filter((r) => r.mealId === mealReq.mealId).length;
+
+    return {
+      ...mealReq,
+      likes: meal?.likes || 0,
+      reviews_count: reviewsCount,
+      mealTitle: meal?.title || mealReq.mealTitle || "Unknown Meal",
+    };
+  });
 
   return (
     <div className="container mx-auto bg-white rounded-xl shadow-md p-8 mt-6">
@@ -98,11 +130,11 @@ const RequestedMeals = () => {
               </tr>
             </thead>
             <tbody>
-              {meals.map((meal) => (
+              {enrichedMeals.map((meal) => (
                 <tr key={meal._id}>
-                  <td className="p-4">{meal.mealTitle || "No title"}</td>
-                  <td className="p-4 text-center">{meal.likes ?? 0}</td>
-                  <td className="p-4 text-center">{meal.reviews_count ?? 0}</td>
+                  <td className="p-4">{meal.mealTitle}</td>
+                  <td className="p-4 text-center">{meal.likes}</td>
+                  <td className="p-4 text-center">{meal.reviews_count}</td>
                   <td className="p-4 text-center">
                     <span
                       className={`px-3 py-1 rounded-full text-sm font-medium ${
@@ -133,14 +165,14 @@ const RequestedMeals = () => {
 
       {/* Card layout for small devices */}
       <div className="md:hidden space-y-4">
-        {meals.map((meal) => (
+        {enrichedMeals.map((meal) => (
           <div key={meal._id} className="border rounded-lg p-4 shadow-sm bg-gray-50">
-            <h3 className="text-lg font-semibold">{meal.mealTitle || "No title"}</h3>
+            <h3 className="text-lg font-semibold">{meal.mealTitle}</h3>
             <p className="mt-2">
-              <span className="font-medium">Likes:</span> {meal.likes ?? 0}
+              <span className="font-medium">Likes:</span> {meal.likes}
             </p>
             <p>
-              <span className="font-medium">Reviews:</span> {meal.reviews_count ?? 0}
+              <span className="font-medium">Reviews:</span> {meal.reviews_count}
             </p>
             <p className="my-2">
               <span className="font-medium">Status:</span>{" "}
