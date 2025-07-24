@@ -8,7 +8,7 @@ import Footer from '../Footer/Footer';
 import { auth } from '../../firebase/firebase.config';
 import { Link, useNavigate } from 'react-router';
 import Swal from 'sweetalert2';
-import { AuthContext } from '../../provider/AuthProvider';
+import AuthContext from '../../provider/AuthContext';
 
 const Register = () => {
   const [showPassword, setShowPassword] = useState(false);

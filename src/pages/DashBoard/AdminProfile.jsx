@@ -1,27 +1,29 @@
 import React, { useContext, useEffect, useState } from "react";
-import { AuthContext } from "../../provider/AuthProvider";
+import { secureFetch } from "../../Hook/api";
+import AuthContext from "../../provider/AuthContext";
 
 const AdminProfile = () => {
   const { user } = useContext(AuthContext);
   const [mealsAdded, setMealsAdded] = useState(0);
 
-  // Fallback image if user has no photoURL
   const profileImage = user?.photoURL || "https://i.postimg.cc/yYqy5hdX/admin-avatar.png";
 
   useEffect(() => {
     if (!user?.email) return;
 
-    // Fetch all meals and count how many belong to the logged-in admin
-    fetch("http://localhost:3000/api/meals")
-      .then(res => res.json())
-      .then(data => {
-        // Filter meals posted by this admin
-        const adminMeals = data.filter(meal => meal.distributorEmail === user.email);
+    const fetchMeals = async () => {
+      try {
+        const res = await secureFetch("http://localhost:3000/api/meals");
+        // Since secureFetch is axios-like, data is in res.data
+        const meals = res.data || [];
+        const adminMeals = meals.filter(meal => meal.distributorEmail === user.email);
         setMealsAdded(adminMeals.length);
-      })
-      .catch(err => {
+      } catch (err) {
         console.error("Failed to fetch meals:", err);
-      });
+      }
+    };
+
+    fetchMeals();
   }, [user?.email]);
 
   return (

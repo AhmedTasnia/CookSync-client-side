@@ -14,7 +14,7 @@ import {
 
 import { auth } from '../../firebase/firebase.config';
 import Swal from 'sweetalert2';
-import { AuthContext } from '../../provider/AuthProvider';
+import AuthContext from '../../provider/AuthContext';
 
 const SignUp = () => {
   const { register, handleSubmit, formState: { errors } } = useForm();

@@ -3,29 +3,27 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { FaTrashAlt, FaEye } from "react-icons/fa";
 import Swal from "sweetalert2";
 import { useNavigate } from "react-router";
-import { AuthContext } from "../../provider/AuthProvider";
+import { secureFetch } from "../../Hook/api"; 
+import AuthContext from "../../provider/AuthContext";
 
-// Fetch all reviews
 const fetchReviews = async () => {
-  const res = await fetch("http://localhost:3000/api/reviews");
-  if (!res.ok) throw new Error("Failed to fetch reviews");
-  return res.json();
+  const res = await secureFetch("http://localhost:3000/api/reviews");
+  if (res.status !== 200) throw new Error("Failed to fetch reviews");
+  return res.data;
 };
 
-// Fetch all meals
 const fetchMeals = async () => {
-  const res = await fetch("http://localhost:3000/api/meals");
-  if (!res.ok) throw new Error("Failed to fetch meals");
-  return res.json();
+  const res = await secureFetch("http://localhost:3000/api/meals");
+  if (res.status !== 200) throw new Error("Failed to fetch meals");
+  return res.data;
 };
 
-// Delete review
 const deleteReview = async (id) => {
-  const res = await fetch(`http://localhost:3000/api/reviews/${id}`, {
+  const res = await secureFetch(`http://localhost:3000/api/reviews/${id}`, {
     method: "DELETE",
   });
-  if (!res.ok) throw new Error("Failed to delete review");
-  return res.json();
+  if (res.status !== 200) throw new Error("Failed to delete review");
+  return res.data;
 };
 
 const AllReviews = () => {
@@ -33,24 +31,30 @@ const AllReviews = () => {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
 
+  // Fetch reviews, enabled only if user.email is available
   const {
     data: allReviews = [],
     isLoading: isLoadingReviews,
     isError: isErrorReviews,
+    error: errorReviews,
   } = useQuery({
     queryKey: ["reviews"],
     queryFn: fetchReviews,
+    enabled: !!user?.email,
   });
 
+  // Fetch meals independently
   const {
     data: meals = [],
     isLoading: isLoadingMeals,
     isError: isErrorMeals,
+    error: errorMeals,
   } = useQuery({
     queryKey: ["meals"],
     queryFn: fetchMeals,
   });
 
+  // Mutation for deleting a review
   const mutation = useMutation({
     mutationFn: deleteReview,
     onSuccess: () => {
@@ -62,6 +66,7 @@ const AllReviews = () => {
     },
   });
 
+  // Handle delete button click with confirmation
   const handleDelete = (id) => {
     Swal.fire({
       title: "Are you sure?",
@@ -78,6 +83,7 @@ const AllReviews = () => {
     });
   };
 
+  // Handle view meal button click (navigate to meal page)
   const handleViewMeal = (mealId) => {
     if (mealId) {
       navigate(`/meal/${mealId}`);
@@ -86,25 +92,38 @@ const AllReviews = () => {
     }
   };
 
-  if (isLoadingReviews || isLoadingMeals) {
-    return <div className="text-center py-10 text-gray-600">Loading...</div>;
-  }
-
-  if (isErrorReviews || isErrorMeals) {
+  // Show loading if user or data not ready
+  if (!user) {
     return (
-      <div className="text-center py-10 text-red-500">Failed to load data</div>
+      <div className="text-center py-10 text-gray-600">
+        Loading user info...
+      </div>
     );
   }
 
+  if (isLoadingReviews || isLoadingMeals) {
+    return <div className="text-center py-10 text-gray-600">Loading data...</div>;
+  }
+
+  // Show error message if any error occurs
+  if (isErrorReviews || isErrorMeals) {
+    return (
+      <div className="text-center py-10 text-red-500">
+        Failed to load data: {(errorReviews || errorMeals)?.message || "Unknown error"}
+      </div>
+    );
+  }
+
+  // Filter reviews for current user (case insensitive)
   const myReviews = allReviews.filter(
-    (review) => review.userEmail === user?.email
+    (review) =>
+      review.userEmail?.trim().toLowerCase() === user.email.trim().toLowerCase()
   );
 
+  // Map reviews with meal data and counts
   const reviewsWithStats = myReviews.map((review) => {
     const meal = meals.find((m) => m._id === review.mealId);
-    const reviewsCount = allReviews.filter(
-      (r) => r.mealId === review.mealId
-    ).length;
+    const reviewsCount = allReviews.filter((r) => r.mealId === review.mealId).length;
 
     return {
       ...review,
@@ -137,76 +156,70 @@ const AllReviews = () => {
                 </tr>
               </thead>
               <tbody>
-                {reviewsWithStats.map(
-                  ({ _id, mealTitle, likes, reviews_count, mealId }) => (
-                    <tr
-                      key={_id}
-                      className="border-b border-gray-300 hover:bg-gray-50 transition"
-                    >
-                      <td className="p-3">{mealTitle}</td>
-                      <td className="p-3 text-center">{likes}</td>
-                      <td className="p-3 text-center">{reviews_count}</td>
-                      <td className="p-3 text-center">
-                        <button
-                          onClick={() => handleDelete(_id)}
-                          className="text-red-600 hover:text-red-800 rounded-full p-2 transition"
-                          title="Delete Review"
-                        >
-                          <FaTrashAlt size={18} />
-                        </button>
-                      </td>
-                      <td className="p-3 text-center">
-                        <button
-                          onClick={() => handleViewMeal(mealId)}
-                          className="text-[#810000] hover:text-[#a30000] rounded-full p-2 transition"
-                          title="View Meal"
-                        >
-                          <FaEye size={18} />
-                        </button>
-                      </td>
-                    </tr>
-                  )
-                )}
+                {reviewsWithStats.map(({ _id, mealTitle, likes, reviews_count, mealId }) => (
+                  <tr
+                    key={_id}
+                    className="border-b border-gray-300 hover:bg-gray-50 transition"
+                  >
+                    <td className="p-3">{mealTitle}</td>
+                    <td className="p-3 text-center">{likes}</td>
+                    <td className="p-3 text-center">{reviews_count}</td>
+                    <td className="p-3 text-center">
+                      <button
+                        onClick={() => handleDelete(_id)}
+                        className="text-red-600 hover:text-red-800 rounded-full p-2 transition"
+                        title="Delete Review"
+                      >
+                        <FaTrashAlt size={18} />
+                      </button>
+                    </td>
+                    <td className="p-3 text-center">
+                      <button
+                        onClick={() => handleViewMeal(mealId)}
+                        className="text-[#810000] hover:text-[#a30000] rounded-full p-2 transition"
+                        title="View Meal"
+                      >
+                        <FaEye size={18} />
+                      </button>
+                    </td>
+                  </tr>
+                ))}
               </tbody>
             </table>
           </div>
 
           {/* Cards for small screens */}
           <div className="md:hidden space-y-4">
-            {reviewsWithStats.map(
-              ({ _id, mealTitle, likes, reviews_count, mealId }) => (
-                <div
-                  key={_id}
-                  className="border rounded-xl p-4 shadow-sm bg-gray-50"
-                >
-                  <h3 className="text-lg font-semibold text-[#810000]">
-                    {mealTitle}
-                  </h3>
-                  <p className="text-sm text-gray-700">
-                    <strong>Likes:</strong> {likes}
-                  </p>
-                  <p className="text-sm text-gray-700">
-                    <strong>Review Count:</strong> {reviews_count}
-                  </p>
-                  <div className="flex justify-end gap-4 mt-3">
-                    <button
-                      onClick={() => handleViewMeal(mealId)}
-                      className="text-[#810000] hover:text-[#a30000]"
-                      title="View Meal"
-                    >
-                      <FaEye />
-                    </button>
-                    <button
-                      onClick={() => handleDelete(_id)}
-                      className="text-red-600 hover:text-red-800"
-                      title="Delete Review"
-                    >
-                      <FaTrashAlt />
-                    </button>
-                  </div>
+            {reviewsWithStats.map(({ _id, mealTitle, likes, reviews_count, mealId }) => (
+              <div
+                key={_id}
+                className="border rounded-xl p-4 shadow-sm bg-gray-50"
+              >
+                <h3 className="text-lg font-semibold text-[#810000]">{mealTitle}</h3>
+                <p className="text-sm text-gray-700">
+                  <strong>Likes:</strong> {likes}
+                </p>
+                <p className="text-sm text-gray-700">
+                  <strong>Review Count:</strong> {reviews_count}
+                </p>
+                <div className="flex justify-end gap-4 mt-3">
+                  <button
+                    onClick={() => handleViewMeal(mealId)}
+                    className="text-[#810000] hover:text-[#a30000]"
+                    title="View Meal"
+                  >
+                    <FaEye />
+                  </button>
+                  <button
+                    onClick={() => handleDelete(_id)}
+                    className="text-red-600 hover:text-red-800"
+                    title="Delete Review"
+                  >
+                    <FaTrashAlt />
+                  </button>
                 </div>
-              )
-            )}
+              </div>
+            ))}
           </div>
         </>
       )}

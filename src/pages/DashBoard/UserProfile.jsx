@@ -1,32 +1,29 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { FaMedal } from "react-icons/fa";
-import { AuthContext } from "../../provider/AuthProvider";
+import { secureFetch } from "../../Hook/api";
+import AuthContext from "../../provider/AuthContext";
+
+const fetchUserProfile = async (email) => {
+  const res = await secureFetch(`http://localhost:3000/users/${email}`);
+  return res.data; // Axios style: data property contains the response body
+};
 
 const UserProfile = () => {
   const { user } = useContext(AuthContext);
-  const [profile, setProfile] = useState(null);
-  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    if (!user?.email) return;
+  const {
+    data: profile,
+    isLoading,
+    isError,
+  } = useQuery({
+    queryKey: ["userProfile", user?.email],
+    queryFn: () => fetchUserProfile(user.email),
+    enabled: !!user?.email,
+    retry: false,
+  });
 
-    setLoading(true);
-    fetch(`http://localhost:3000/users/${user.email}`)
-      .then((res) => {
-        if (!res.ok) throw new Error("Failed to fetch profile");
-        return res.json();
-      })
-      .then((data) => {
-        setProfile(data);
-      })
-      .catch((err) => {
-        console.error(err);
-        setProfile(null);
-      })
-      .finally(() => setLoading(false));
-  }, [user?.email]);
-
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="max-w-3xl mx-auto jost-font bg-[#810000] text-white rounded-xl shadow-md p-4 sm:p-8 mt-8 sm:mt-14 text-center">
         Loading profile...
@@ -34,7 +31,7 @@ const UserProfile = () => {
     );
   }
 
-  if (!profile) {
+  if (isError || !profile) {
     return (
       <div className="max-w-3xl mx-auto jost-font bg-[#810000] text-white rounded-xl shadow-md p-4 sm:p-8 mt-8 sm:mt-14 text-center">
         User profile not found.
@@ -42,7 +39,6 @@ const UserProfile = () => {
     );
   }
 
-  // Badge color map — you can add more badge types here
   const badgeColors = {
     gold: "text-yellow-400",
     bronze: "text-orange-400",

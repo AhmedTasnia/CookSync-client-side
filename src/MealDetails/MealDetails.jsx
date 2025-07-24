@@ -2,8 +2,9 @@ import React, { useContext, useState } from "react";
 import { useParams, useNavigate } from "react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { FaThumbsUp, FaStar } from "react-icons/fa";
-import { AuthContext } from "../provider/AuthProvider";
 import Swal from "sweetalert2";
+import { secureFetch } from "../Hook/api";
+import AuthContext from "../provider/AuthContext";
 
 const fetchMealById = async (id) => {
   const res = await fetch(`http://localhost:3000/api/meals/${id}`);
@@ -12,8 +13,12 @@ const fetchMealById = async (id) => {
 };
 
 const fetchUserByEmail = async (email) => {
-  const res = await fetch(`http://localhost:3000/users/${email}`);
-  return res.json();
+  try{
+    const res = await secureFetch(`http://localhost:3000/users/${email}`);
+    return res.json();
+  } catch {
+    throw new Error("Failed to fetch user");
+  }
 };
 
 const fetchReviews = async (mealId) => {
@@ -174,7 +179,7 @@ const MealDetails = () => {
   const handleAddReview = () => {
     if (!user) {
       Swal.fire("Please login first", "", "warning");
-      navigate("/login");
+      navigate("/SignUp");
       return;
     }
 

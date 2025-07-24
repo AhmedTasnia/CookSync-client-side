@@ -1,7 +1,7 @@
 import React, { useContext, useState } from "react";
 import { Link, NavLink, useNavigate } from "react-router";
 import { FiBell } from "react-icons/fi";
-import { AuthContext } from "../../provider/AuthProvider";
+import AuthContext from "../../provider/AuthContext";
 
 const NavBar = () => {
   const { user, logOut } = useContext(AuthContext);

@@ -1,6 +1,7 @@
-import React, { useContext, useState, useEffect } from "react";
-import { Link, NavLink, Outlet, useNavigate } from "react-router";
-import { AuthContext } from "../provider/AuthProvider";
+import React, { useContext, useState } from "react";
+import { Link, NavLink, Outlet, useNavigate } from "react-router"; // react-router-dom for web apps
+import { useQuery } from "@tanstack/react-query";
+import { secureFetch } from "../Hook/api"; // your axios wrapper
 import {
   FaUserCircle,
   FaUsers,
@@ -12,49 +13,44 @@ import {
   FaBars,
   FaTimes,
 } from "react-icons/fa";
+import AuthContext from "../provider/AuthContext";
+
+const fetchUserRole = async (email) => {
+  const res = await secureFetch(`http://localhost:3000/api/users?email=${encodeURIComponent(email)}`);
+  if (res.status !== 200) {
+    throw new Error("Failed to fetch user data");
+  }
+  return res.data.role || "user"; // fallback role
+};
 
 const DashboardLayout = () => {
   const { user } = useContext(AuthContext);
   const navigate = useNavigate();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [role, setRole] = useState(null); // Will hold "admin" or "user"
 
-  // Fetch user info including role from backend by email
-  useEffect(() => {
-    if (!user?.email) return;
+  // Use React Query to fetch role
+  const {
+    data: role,
+    isLoading,
+    isError,
+    error,
+  } = useQuery({
+    queryKey: ["userRole", user?.email],
+    queryFn: () => fetchUserRole(user.email),
+    enabled: !!user?.email,
+    retry: false,
+  });
 
-    const fetchUserRole = async () => {
-      try {
-        const res = await fetch(`http://localhost:3000/api/users?email=${encodeURIComponent(user.email)}`);
-        if (!res.ok) throw new Error("Failed to fetch user data");
-        const userData = await res.json();
+  // Navigate based on role when role data arrives
+  React.useEffect(() => {
+    if (!role) return;
+    if (role === "admin") {
+      navigate("/dashboard/adminProfile", { replace: true });
+    } else {
+      navigate("/dashboard/userProfile", { replace: true });
+    }
+  }, [role, navigate]);
 
-        if (userData && userData.role) {
-          setRole(userData.role);
-
-          // Navigate based on role
-          if (userData.role === "admin") {
-            navigate("/dashboard/adminProfile", { replace: true });
-          } else {
-            navigate("/dashboard/userProfile", { replace: true });
-          }
-        } else {
-          // If no role found, fallback to user dashboard
-          setRole("user");
-          navigate("/dashboard/userProfile", { replace: true });
-        }
-      } catch (error) {
-        console.error("Error fetching user role:", error);
-        // fallback navigation
-        setRole("user");
-        navigate("/dashboard/userProfile", { replace: true });
-      }
-    };
-
-    fetchUserRole();
-  }, [user, navigate]);
-
-  // Define links for admin and user
   const adminLinks = [
     { to: "/dashboard/adminProfile", label: "Admin Profile", icon: <FaUserCircle /> },
     { to: "/dashboard/manageUsers", label: "Manage Users", icon: <FaUsers /> },
@@ -72,15 +68,18 @@ const DashboardLayout = () => {
     { to: "/dashboard/paymentHistory", label: "Payment History", icon: <FaMoneyCheckAlt /> },
   ];
 
-  const handleExit = () => {
-    navigate("/");
-  };
-
-  // Show loading or nothing until role is fetched
-  if (!role) {
+  if (isLoading) {
     return (
       <div className="flex justify-center items-center min-h-screen">
         <p className="text-xl">Loading dashboard...</p>
+      </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <div className="flex justify-center items-center min-h-screen text-red-600">
+        <p>Error loading user role: {error.message}</p>
       </div>
     );
   }
@@ -89,9 +88,13 @@ const DashboardLayout = () => {
 
   return (
     <div className="flex min-h-screen h-screen jost-font bg-gray-50 relative">
-      {/* Hamburger for small devices */}
+      {/* Hamburger */}
       <div className="lg:hidden absolute top-4 left-4 z-50">
-        <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="text-2xl text-[#810000]">
+        <button
+          onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+          className="text-2xl text-[#810000]"
+          aria-label="Toggle Sidebar"
+        >
           {isSidebarOpen ? <FaTimes /> : <FaBars />}
         </button>
       </div>
@@ -149,7 +152,7 @@ const DashboardLayout = () => {
         </div>
 
         <button
-          onClick={handleExit}
+          onClick={() => navigate("/")}
           className="flex items-center justify-center gap-2 text-red-400 hover:text-red-500 font-semibold px-4 py-2 mt-6 rounded-full border border-red-400 hover:bg-red-800 hover:bg-opacity-10 transition"
         >
           <FaSignOutAlt size={18} />

@@ -1,26 +1,25 @@
 import React, { useContext } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { AuthContext } from "../../provider/AuthProvider";
 import Swal from "sweetalert2";
+import { secureFetch } from "../../Hook/api"; // Axios wrapper with token
+import AuthContext from "../../provider/AuthContext";
 
+// ✅ Axios-based fetchers
 const fetchRequestedMeals = async (email) => {
-  const res = await fetch(
+  const res = await secureFetch(
     `http://localhost:3000/api/mealRequests?userEmail=${encodeURIComponent(email)}`
   );
-  if (!res.ok) throw new Error("Failed to fetch requested meals");
-  return res.json();
+  return res.data;
 };
 
 const fetchAllMeals = async () => {
-  const res = await fetch("http://localhost:3000/api/meals");
-  if (!res.ok) throw new Error("Failed to fetch meals");
-  return res.json();
+  const res = await secureFetch("http://localhost:3000/api/meals");
+  return res.data;
 };
 
 const fetchAllReviews = async () => {
-  const res = await fetch("http://localhost:3000/api/reviews");
-  if (!res.ok) throw new Error("Failed to fetch reviews");
-  return res.json();
+  const res = await secureFetch("http://localhost:3000/api/reviews");
+  return res.data;
 };
 
 const RequestedMeals = () => {
@@ -55,6 +54,7 @@ const RequestedMeals = () => {
     queryFn: fetchAllReviews,
   });
 
+  // ✅ Use secureFetch for DELETE if route is protected
   const handleCancel = async (id) => {
     const result = await Swal.fire({
       title: "Are you sure?",
@@ -68,38 +68,30 @@ const RequestedMeals = () => {
 
     if (result.isConfirmed) {
       try {
-        const res = await fetch(`http://localhost:3000/api/mealRequests/${id}`, {
+        const res = await secureFetch(`http://localhost:3000/api/mealRequests/${id}`, {
           method: "DELETE",
         });
-        if (res.ok) {
+
+        if (res.status === 200) {
           Swal.fire("Cancelled!", "Your meal request has been cancelled.", "success");
           refetch();
         } else {
           Swal.fire("Failed!", "Failed to cancel meal request.", "error");
         }
-      } catch {
+      } catch (err) {
+        console.error(err);
         Swal.fire("Error!", "Something went wrong.", "error");
       }
     }
   };
 
-  if (!user) {
-    return <p className="text-center mt-10">Please login to see your requested meals.</p>;
-  }
+  // ✅ Handle loading and error states
+  if (!user) return <p className="text-center mt-10">Please login to see your requested meals.</p>;
+  if (loadingRequests || loadingMeals || loadingReviews) return <p className="text-center mt-10">Loading your requested meals...</p>;
+  if (errorRequests || errorMeals || errorReviews) return <p className="text-center mt-10 text-red-500">Failed to load data.</p>;
+  if (requestedMeals.length === 0) return <p className="text-center mt-10">You have no meal requests.</p>;
 
-  if (loadingRequests || loadingMeals || loadingReviews) {
-    return <p className="text-center mt-10">Loading your requested meals...</p>;
-  }
-
-  if (errorRequests || errorMeals || errorReviews) {
-    return <p className="text-center mt-10 text-red-500">Failed to load data.</p>;
-  }
-
-  if (requestedMeals.length === 0) {
-    return <p className="text-center mt-10">You have no meal requests.</p>;
-  }
-
-  // Enrich requested meals with likes and review count
+  // ✅ Enrich data with meal info
   const enrichedMeals = requestedMeals.map((mealReq) => {
     const meal = allMeals.find((m) => m._id === mealReq.mealId);
     const reviewsCount = allReviews.filter((r) => r.mealId === mealReq.mealId).length;
@@ -163,17 +155,13 @@ const RequestedMeals = () => {
         </div>
       </div>
 
-      {/* Card layout for small devices */}
+      {/* Cards for small devices */}
       <div className="md:hidden space-y-4">
         {enrichedMeals.map((meal) => (
           <div key={meal._id} className="border rounded-lg p-4 shadow-sm bg-gray-50">
             <h3 className="text-lg font-semibold">{meal.mealTitle}</h3>
-            <p className="mt-2">
-              <span className="font-medium">Likes:</span> {meal.likes}
-            </p>
-            <p>
-              <span className="font-medium">Reviews:</span> {meal.reviews_count}
-            </p>
+            <p className="mt-2"><span className="font-medium">Likes:</span> {meal.likes}</p>
+            <p><span className="font-medium">Reviews:</span> {meal.reviews_count}</p>
             <p className="my-2">
               <span className="font-medium">Status:</span>{" "}
               <span

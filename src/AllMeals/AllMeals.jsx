@@ -52,7 +52,6 @@ const AllMeals = () => {
     keepPreviousData: true,
   });
 
-  // Refetch when filters change
   useEffect(() => {
     refetch();
   }, [searchQuery, category, priceRange, refetch]);

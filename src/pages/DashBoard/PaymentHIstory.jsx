@@ -1,13 +1,15 @@
 import React, { useContext } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { AuthContext } from "../../provider/AuthProvider";
+import { secureFetch } from "../../Hook/api";
+import AuthContext from "../../provider/AuthContext";
 
 const fetchPayments = async (email) => {
-  const response = await fetch(`http://localhost:3000/payments?email=${email}`);
-  if (!response.ok) {
+  const response = await secureFetch(`http://localhost:3000/payments?email=${email}`);
+  // secureFetch returns axios-like response, so check response.status instead of response.ok
+  if (response.status !== 200) {
     throw new Error("Failed to fetch payment history");
   }
-  return response.json();
+  return response.data; // return the actual data
 };
 
 const PaymentHistory = () => {
@@ -17,6 +19,7 @@ const PaymentHistory = () => {
     queryKey: ["payments", user?.email],
     enabled: !!user?.email,
     queryFn: () => fetchPayments(user.email),
+    retry: false,
   });
 
   if (isLoading) {
@@ -51,9 +54,8 @@ const PaymentHistory = () => {
               <thead className="bg-gray-100">
                 <tr>
                   <th className="p-3 border">#</th>
-                  <th className="p-3 border">Meal Title</th>
+                  <th className="p-3 border">Package</th>
                   <th className="p-3 border">Amount</th>
-                  <th className="p-3 border">Transaction ID</th>
                   <th className="p-3 border">Date</th>
                 </tr>
               </thead>
@@ -61,9 +63,8 @@ const PaymentHistory = () => {
                 {payments.map((payment, index) => (
                   <tr key={payment._id} className="text-center">
                     <td className="p-3 border">{index + 1}</td>
-                    <td className="p-3 border">{payment.mealTitle || "N/A"}</td>
-                    <td className="p-3 border">{payment.price}</td>
-                    <td className="p-3 border">{payment.transactionId}</td>
+                    <td className="p-3 border">{payment.package || "N/A"}</td>
+                    <td className="p-3 border">{payment.price || "N/A"}</td>
                     <td className="p-3 border">
                       {new Date(payment.date).toLocaleDateString()}
                     </td>
@@ -72,6 +73,7 @@ const PaymentHistory = () => {
               </tbody>
             </table>
           </div>
+
           {/* Cards for small screens */}
           <div className="md:hidden flex flex-col gap-4">
             {payments.map((payment, index) => (
@@ -86,16 +88,12 @@ const PaymentHistory = () => {
                   </span>
                 </div>
                 <div className="mb-1">
-                  <span className="font-semibold">Meal Title: </span>
-                  {payment.mealTitle || "N/A"}
+                  <span className="font-semibold">Package: </span>
+                  {payment.package || "N/A"}
                 </div>
                 <div className="mb-1">
                   <span className="font-semibold">Amount: </span>
-                  {payment.price}
-                </div>
-                <div className="mb-1">
-                  <span className="font-semibold">Transaction ID: </span>
-                  {payment.transactionId}
+                  {payment.price || "N/A"}
                 </div>
               </div>
             ))}

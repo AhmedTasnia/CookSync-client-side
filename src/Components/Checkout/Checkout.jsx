@@ -1,13 +1,24 @@
 import { CardElement, useElements, useStripe } from "@stripe/react-stripe-js";
-import { useContext, useState, useEffect } from "react";
-import { AuthContext } from "../../provider/AuthProvider";
+import { useContext, useState } from "react";
 import { useParams } from "react-router";
 import Swal from "sweetalert2";
+import { useQuery } from "@tanstack/react-query";
+import { secureFetch } from "../../Hook/api";
+import AuthContext from "../../provider/AuthContext";
+
 
 const packageDetails = {
   Silver: { price: 1900, displayPrice: "$19", badge: "Silver" },
   Gold: { price: 3900, displayPrice: "$39", badge: "Gold" },
   Platinum: { price: 5900, displayPrice: "$59", badge: "Platinum" },
+};
+
+const fetchUserData = async (email) => {
+  const res = await secureFetch(`http://localhost:3000/users/${email}`);
+  if (res.status !== 200) {
+    throw new Error("Failed to fetch user data");
+  }
+  return res.data;
 };
 
 const CheckoutPage = () => {
@@ -17,29 +28,20 @@ const CheckoutPage = () => {
   const elements = useElements();
 
   const [loading, setLoading] = useState(false);
-  const [dbUser, setDbUser] = useState(null);
-  const [fetchError, setFetchError] = useState(null);
 
   const selectedPackage = packageDetails[packageName];
 
-  useEffect(() => {
-    if (!user?.email) return;
-
-    // Fetch user data manually
-    const fetchUserData = async () => {
-      try {
-        const res = await fetch(`http://localhost:3000/users/${user.email}`);
-        if (!res.ok) throw new Error("Failed to fetch user data");
-        const data = await res.json();
-        setDbUser(data);
-      } catch (error) {
-        console.error(error);
-        setFetchError(error.message);
-      }
-    };
-
-    fetchUserData();
-  }, [user]);
+  // Use React Query to fetch user data
+  const {
+    data: dbUser,
+    error: fetchError,
+    isLoading: isFetchingUser,
+  } = useQuery({
+    queryKey: ["user", user?.email],
+    queryFn: () => fetchUserData(user.email),
+    enabled: !!user?.email,
+    retry: false,
+  });
 
   if (!selectedPackage) {
     return (
@@ -50,10 +52,18 @@ const CheckoutPage = () => {
     );
   }
 
+  if (isFetchingUser) {
+    return (
+      <div className="max-w-xl mx-auto my-10 text-center font-semibold">
+        Loading user data...
+      </div>
+    );
+  }
+
   if (fetchError) {
     return (
-      <div className="max-w-xl mx-auto my-10 text-red-600">
-        <p>Error loading user data: {fetchError}</p>
+      <div className="max-w-xl mx-auto my-10 text-red-600 text-center">
+        <p>Error loading user data: {fetchError.message || "Unknown error"}</p>
       </div>
     );
   }
@@ -69,27 +79,18 @@ const CheckoutPage = () => {
     setLoading(true);
 
     try {
-      // Optionally, you can collect the card info token to send to backend:
       const cardElement = elements.getElement(CardElement);
+      if (!cardElement) throw new Error("Card information is incomplete");
 
-      if (!cardElement) {
-        throw new Error("Card information is incomplete");
-      }
-
-      // Create token from card info (optional, if you want to send token to backend)
       const { error: tokenError, token } = await stripe.createToken(cardElement);
+      if (tokenError) throw new Error(tokenError.message);
 
-      if (tokenError) {
-        throw new Error(tokenError.message);
-      }
-
-      // Send payment info along with token.id to your backend
       const paymentData = {
         email: user.email,
         package: packageName,
         badge: selectedPackage.badge,
         price: selectedPackage.displayPrice,
-        stripeToken: token.id, // you can send this token for backend processing
+        stripeToken: token.id,
       };
 
       console.log("Payment data to send:", paymentData);
@@ -100,9 +101,8 @@ const CheckoutPage = () => {
         body: JSON.stringify(paymentData),
       });
 
-      if (!saveRes.ok) {
-        const errData = await saveRes.json();
-        throw new Error(errData.message || "Failed to save payment info");
+      if (saveRes.status !== 200) {
+        throw new Error(saveRes.data?.message || "Failed to save payment info");
       }
 
       Swal.fire({

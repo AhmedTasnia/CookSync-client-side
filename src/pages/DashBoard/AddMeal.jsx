@@ -11,8 +11,8 @@ import {
   FaEnvelope,
   FaPlusCircle,
 } from "react-icons/fa";
-import { AuthContext } from "../../provider/AuthProvider";
 import Swal from "sweetalert2";
+import AuthContext from "../../provider/AuthContext";
 
 const AddMeal = () => {
   const { user } = useContext(AuthContext);

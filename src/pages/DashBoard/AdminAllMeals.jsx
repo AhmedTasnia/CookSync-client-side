@@ -3,14 +3,14 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { FaTrashAlt, FaEye, FaEdit, FaSortAmountDown } from "react-icons/fa";
 import { useNavigate } from "react-router";
 import Swal from "sweetalert2";
+import { secureFetch } from "../../Hook/api";
+import Pagination from "../../Components/Pagination/Pagination";
 
 const fetchMeals = async (sortBy = "") => {
   const url = `http://localhost:3000/api/meals${sortBy ? `?sort=${sortBy}` : ""}`;
-  const res = await fetch(url);
-  if (!res.ok) {
-    throw new Error(`Failed to fetch meals: ${res.status} ${res.statusText}`);
-  }
-  return res.json();
+  const res = await secureFetch(url);
+  if (res.status !== 200) throw new Error(`Failed to fetch meals: ${res.statusText}`);
+  return res.data; // Axios response data is here
 };
 
 const AdminAllMeals = () => {
@@ -22,7 +22,7 @@ const AdminAllMeals = () => {
   const navigate = useNavigate();
 
   const {
-    data: meals = [],
+    data: meals,
     isLoading,
     error,
   } = useQuery({
@@ -31,6 +31,8 @@ const AdminAllMeals = () => {
     keepPreviousData: true,
     staleTime: 5 * 60 * 1000,
   });
+
+  console.log("Fetched meals:", meals);
 
   const handleDelete = async (mealId) => {
     const result = await Swal.fire({
@@ -42,14 +44,13 @@ const AdminAllMeals = () => {
       cancelButtonColor: "#d33",
       confirmButtonText: "Yes, delete it!",
     });
-
     if (!result.isConfirmed) return;
 
     try {
-      const res = await fetch(`http://localhost:3000/api/meals/${mealId}`, {
+      const res = await secureFetch(`http://localhost:3000/api/meals/${mealId}`, {
         method: "DELETE",
       });
-      if (res.ok) {
+      if (res.status === 200) {
         Swal.fire("Deleted!", "Meal has been deleted.", "success");
         queryClient.invalidateQueries(["meals"]);
       } else {
@@ -66,23 +67,25 @@ const AdminAllMeals = () => {
 
   const handleUpdateSubmit = async (e) => {
     e.preventDefault();
-    const res = await fetch(`http://localhost:3000/api/meals/${editingMeal._id}`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        title: editingMeal.title,
-        distributorName: editingMeal.distributorName,
-        rating: parseFloat(editingMeal.rating),
-        price: parseFloat(editingMeal.price),
-      }),
-    });
-    if (res.ok) {
-      Swal.fire("Success!", "Meal updated successfully.", "success");
-      queryClient.invalidateQueries(["meals"]);
-      setEditingMeal(null);
-    } else {
+    try {
+      const res = await secureFetch(`http://localhost:3000/api/meals/${editingMeal._id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title: editingMeal.title,
+          distributorName: editingMeal.distributorName,
+          rating: parseFloat(editingMeal.rating),
+          price: parseFloat(editingMeal.price),
+        }),
+      });
+      if (res.status === 200) {
+        Swal.fire("Success!", "Meal updated successfully.", "success");
+        queryClient.invalidateQueries(["meals"]);
+        setEditingMeal(null);
+      } else {
+        Swal.fire("Error!", "Failed to update meal.", "error");
+      }
+    } catch {
       Swal.fire("Error!", "Failed to update meal.", "error");
     }
   };
@@ -90,12 +93,9 @@ const AdminAllMeals = () => {
   if (isLoading) return <p className="text-center py-8">Loading meals...</p>;
   if (error)
     return (
-      <p className="text-center text-red-600 py-8">
-        Error loading meals: {error.message}
-      </p>
+      <p className="text-center text-red-600 py-8">Error loading meals: {error.message}</p>
     );
-  if (meals.length === 0)
-    return <p className="text-center py-8">No meals found.</p>;
+  if (meals.length === 0) return <p className="text-center py-8">No meals found.</p>;
 
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
@@ -116,7 +116,7 @@ const AdminAllMeals = () => {
           <FaSortAmountDown /> Sort by Likes
         </button>
         <button
-          onClick={() => setSortField("reviews_count")}
+          onClick={() => setSortField("reviewCount")}
           className="flex items-center gap-2 bg-[#810000] text-white px-4 py-2 rounded-lg hover:bg-[#a30000]"
         >
           <FaSortAmountDown /> Sort by Reviews
@@ -145,7 +145,7 @@ const AdminAllMeals = () => {
               >
                 <td className="p-3">{meal.title}</td>
                 <td className="p-3 text-center">{meal.likes}</td>
-                <td className="p-3 text-center">{meal.reviews_count}</td>
+                <td className="p-3 text-center">{meal.reviewCount}</td>
                 <td className="p-3 text-center">{meal.rating?.toFixed(1)}</td>
                 <td className="p-3 text-center">{meal.distributorName}</td>
                 <td className="p-3 text-center">
@@ -180,12 +180,23 @@ const AdminAllMeals = () => {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 lg:hidden mt-6">
         {currentItems.map((meal) => (
-          <div key={meal._id} className="border rounded-xl shadow-md p-4 space-y-2">
+          <div
+            key={meal._id}
+            className="border rounded-xl shadow-md p-4 space-y-2"
+          >
             <h3 className="text-xl font-semibold text-[#810000]">{meal.title}</h3>
-            <p>Likes: <span className="font-medium">{meal.likes}</span></p>
-            <p>Reviews: <span className="font-medium">{meal.reviews_count}</span></p>
-            <p>Rating: <span className="font-medium">{meal.rating?.toFixed(1)}</span></p>
-            <p>Distributor: <span className="font-medium">{meal.distributorName}</span></p>
+            <p>
+              Likes: <span className="font-medium">{meal.likes}</span>
+            </p>
+            <p>
+              Reviews: <span className="font-medium">{meal.reviewCount}</span>
+            </p>
+            <p>
+              Rating: <span className="font-medium">{meal.rating?.toFixed(1)}</span>
+            </p>
+            <p>
+              Distributor: <span className="font-medium">{meal.distributorName}</span>
+            </p>
             <div className="flex gap-2 flex-wrap">
               <button
                 onClick={() => handleEditClick(meal)}
@@ -210,27 +221,12 @@ const AdminAllMeals = () => {
         ))}
       </div>
 
-      <div className="flex justify-center items-center gap-4 mt-6">
-        <button
-          onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-          disabled={currentPage === 1}
-          className="px-4 py-2 bg-gray-100 rounded-md disabled:opacity-50"
-        >
-          Prev
-        </button>
-        <span className="font-medium">
-          Page {currentPage} of {totalPages}
-        </span>
-        <button
-          onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
-          disabled={currentPage === totalPages}
-          className="px-4 py-2 bg-gray-100 rounded-md disabled:opacity-50"
-        >
-          Next
-        </button>
-      </div>
+      <Pagination
+        totalPages={totalPages}
+        currentPage={currentPage}
+        setCurrentPage={setCurrentPage}
+      />
 
-      {/* Update Modal */}
       {editingMeal && (
         <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-xl w-96">
@@ -316,6 +312,7 @@ const AdminAllMeals = () => {
             </form>
           </div>
         </div>
+        
       )}
     </div>
   );
