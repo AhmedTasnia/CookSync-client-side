@@ -15,7 +15,7 @@ const fetchMealById = async (id) => {
 const fetchUserByEmail = async (email) => {
   try{
     const res = await secureFetch(`https://cook-sync-server.vercel.app/users/${email}`);
-    return res.json();
+    return res.data();
   } catch {
     throw new Error("Failed to fetch user");
   }
@@ -49,7 +49,7 @@ const MealDetails = () => {
     queryFn: () => fetchMealById(id),
   });
 
-  const { data: dbUser = {} } = useQuery({
+  useQuery({
     queryKey: ["user", user?.email],
     queryFn: () => fetchUserByEmail(user.email),
     enabled: !!user?.email,
@@ -98,8 +98,6 @@ const MealDetails = () => {
     onSuccess: () => {
       setNewReview("");
       refetchReviews();
-
-      // Update meal review count after successfully adding a review
       updateMeal.mutate({
         mealId: id,
         updateData: { reviewCount: (meal.reviewCount || 0) + 1 },
@@ -131,7 +129,19 @@ const MealDetails = () => {
       return;
     }
 
-    if (!["Silver", "Gold", "Platinum"].includes(dbUser?.badge)) {
+    // Fetch user data from backend to get the badge
+    let userBadge = null;
+    try {
+      const res = await fetch(`https://cook-sync-server.vercel.app/users/${user.email}`);
+      if (!res.ok) throw new Error("Failed to fetch user data");
+      const userData = await res.json();
+      userBadge = userData.badge;
+    } catch {
+      Swal.fire("Error", "Could not fetch user badge.", "error");
+      return;
+    }
+
+    if (!["Silver", "Gold", "Platinum"].includes(userBadge)) {
       Swal.fire({
         icon: "warning",
         title: "Membership Required",
@@ -141,7 +151,7 @@ const MealDetails = () => {
       navigate("/");
       return;
     }
-
+    // If user has a valid badge, post their badge info with the request
     const requestData = {
       userName: user.displayName,
       userEmail: user.email,
@@ -150,6 +160,7 @@ const MealDetails = () => {
       distributorName: meal.distributorName,
       status: "Pending",
       requestTime: new Date().toISOString(),
+      userBadge: userBadge,
     };
 
     try {
@@ -174,6 +185,7 @@ const MealDetails = () => {
       console.error(error);
       Swal.fire("Something went wrong", "", "error");
     }
+    
   };
 
   const handleAddReview = () => {

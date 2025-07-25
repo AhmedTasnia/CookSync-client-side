@@ -1,11 +1,27 @@
-import React from "react";
+import React, { useContext } from "react";
 import { useNavigate } from "react-router";
+import Swal from "sweetalert2";
 import { FaMedal, FaCrown, FaGem, FaCheckCircle } from "react-icons/fa";
+import AuthContext from "../../provider/AuthContext";
 
 const MembershipPage = () => {
   const navigate = useNavigate();
+  const { user } = useContext(AuthContext); // Access logged-in user
 
   const handleNavigate = (packageName) => {
+    if (!user) {
+      Swal.fire({
+        icon: "warning",
+        title: "Sign Up Required",
+        text: "Please sign up or log in first to purchase a membership!",
+        confirmButtonText: "Go to Sign Up",
+      }).then((result) => {
+        if (result.isConfirmed) {
+          navigate("/signup");
+        }
+      });
+      return;
+    }
     navigate(`/checkout/${packageName}`);
   };
 
@@ -13,15 +29,15 @@ const MembershipPage = () => {
     <div className="container mx-auto bg-gradient-to-br bg-white py-16 px-4">
       <div className="max-w-5xl mx-auto">
         <div className="text-center mb-16">
-          <h1 className="text-4xl md:text-5xl font-bold text-[#630000] mb-4">Choose Your Membership</h1>
+          <h1 className="text-4xl md:text-5xl font-bold text-[#630000] mb-4">
+            Choose Your Membership
+          </h1>
           <p className="text-lg text-gray-600 max-w-2xl mx-auto">
             Upgrade to enjoy premium features tailored for every lifestyle and need.
           </p>
         </div>
 
-
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-
           {/* Silver */}
           <div
             onClick={() => handleNavigate("Silver")}

@@ -13,7 +13,7 @@ Welcome to **Cook Sync**, a full-stack web application for managing and subscrib
 
 ## 🌐 Live Site URL
 
-👉 [Visit Live Website](https://mealmania.live)
+👉 [Visit Live Website](https://cook-sync-acd67.web.app/)
 
 ---
 
