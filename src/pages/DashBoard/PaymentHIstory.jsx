@@ -4,7 +4,7 @@ import { secureFetch } from "../../Hook/api";
 import AuthContext from "../../provider/AuthContext";
 
 const fetchPayments = async (email) => {
-  const response = await secureFetch(`http://localhost:3000/payments?email=${email}`);
+  const response = await secureFetch(`https://cook-sync-server.vercel.app/payments?email=${email}`);
   if (response.status !== 200) {
     throw new Error("Failed to fetch payment history");
   }

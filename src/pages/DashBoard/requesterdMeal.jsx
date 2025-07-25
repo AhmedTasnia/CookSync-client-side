@@ -6,17 +6,17 @@ import AuthContext from "../../provider/AuthContext";
 import Pagination from "../../Components/Pagination/Pagination";
 
 const fetchRequestedMeals = async (email) => {
-  const res = await secureFetch(`http://localhost:3000/api/mealRequests?userEmail=${encodeURIComponent(email)}`);
+  const res = await secureFetch(`https://cook-sync-server.vercel.app/api/mealRequests?userEmail=${encodeURIComponent(email)}`);
   return res.data;
 };
 
 const fetchAllMeals = async () => {
-  const res = await secureFetch("http://localhost:3000/api/meals");
+  const res = await secureFetch("https://cook-sync-server.vercel.app/api/meals");
   return res.data;
 };
 
 const fetchAllReviews = async () => {
-  const res = await secureFetch("http://localhost:3000/api/reviews");
+  const res = await secureFetch("https://cook-sync-server.vercel.app/api/reviews");
   return res.data;
 };
 
@@ -67,7 +67,7 @@ const RequestedMeals = () => {
 
     if (result.isConfirmed) {
       try {
-        const res = await secureFetch(`http://localhost:3000/api/mealRequests/${id}`, {
+        const res = await secureFetch(`https://cook-sync-server.vercel.app/api/mealRequests/${id}`, {
           method: "DELETE",
         });
 

@@ -17,7 +17,7 @@ const fetchMeals = async ({ pageParam = 0, queryKey }) => {
     limit: "9",
   });
 
-  const res = await fetch(`http://localhost:3000/api/meals?${params.toString()}`);
+  const res = await fetch(`https://cook-sync-server.vercel.app/api/meals?${params.toString()}`);
 
   if (!res.ok) {
     throw new Error("Failed to fetch meals");

@@ -8,19 +8,19 @@ import AuthContext from "../../provider/AuthContext";
 import Pagination from "../../Components/Pagination/Pagination"; // ✅ Import your Pagination component
 
 const fetchReviews = async () => {
-  const res = await secureFetch("http://localhost:3000/api/reviews");
+  const res = await secureFetch("https://cook-sync-server.vercel.app/api/reviews");
   if (res.status !== 200) throw new Error("Failed to fetch reviews");
   return res.data;
 };
 
 const fetchMeals = async () => {
-  const res = await secureFetch("http://localhost:3000/api/meals");
+  const res = await secureFetch("https://cook-sync-server.vercel.app/api/meals");
   if (res.status !== 200) throw new Error("Failed to fetch meals");
   return res.data;
 };
 
 const deleteReview = async (id) => {
-  const res = await secureFetch(`http://localhost:3000/api/reviews/${id}`, {
+  const res = await secureFetch(`https://cook-sync-server.vercel.app/api/reviews/${id}`, {
     method: "DELETE",
   });
   if (res.status !== 200) throw new Error("Failed to delete review");

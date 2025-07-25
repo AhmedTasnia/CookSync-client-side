@@ -8,7 +8,7 @@ import AuthContext from "../provider/AuthContext";
 
 // Utility function to fetch upcoming meals
 const fetchUpcomingMeals = async () => {
-  const res = await fetch("http://localhost:3000/api/upcomingMeals");
+  const res = await fetch("https://cook-sync-server.vercel.app/api/upcomingMeals");
   if (!res.ok) {
     throw new Error("Failed to fetch upcoming meals");
   }
@@ -25,7 +25,7 @@ const UpcomingMeals = () => {
   const { data: dbUser = {} } = useQuery({
   queryKey: ["user", user?.email],
   queryFn: async () => {
-    const res = await secureFetch(`http://localhost:3000/users/${user?.email}`);
+    const res = await secureFetch(`https://cook-sync-server.vercel.app/users/${user?.email}`);
     if (res.status !== 200) {
       throw new Error("Failed to fetch user data");
     }
@@ -79,7 +79,7 @@ const UpcomingMeals = () => {
 
     try {
       const res = await fetch(
-        `http://localhost:3000/api/upcomingMeals/${mealId}/like`,
+        `https://cook-sync-server.vercel.app/api/upcomingMeals/${mealId}/like`,
         {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },

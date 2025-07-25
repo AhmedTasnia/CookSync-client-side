@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import { FaStar, FaUtensils, FaCoffee, FaHamburger, FaConciergeBell } from "react-icons/fa";
 import { useNavigate } from "react-router";
 import { useQuery } from "@tanstack/react-query";
-import { secureFetch } from "../../Hook/api";
 
 const MealByCategory = () => {
     const [activeTab, setActiveTab] = useState("Breakfast");
@@ -18,8 +17,8 @@ const MealByCategory = () => {
     const { data: meals = [], isLoading, isError } = useQuery({
         queryKey: ["meals", activeTab],
         queryFn: async () => {
-            const res = await secureFetch(`http://localhost:3000/api/meals?category=${activeTab}`);
-            return res.data;
+            const res = await fetch(`https://cook-sync-server.vercel.app/api/meals?category=${activeTab}`);
+            return res.json();
         },
     });
 

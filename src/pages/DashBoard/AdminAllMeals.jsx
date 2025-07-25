@@ -7,7 +7,7 @@ import { secureFetch } from "../../Hook/api";
 import Pagination from "../../Components/Pagination/Pagination";
 
 const fetchMeals = async (sortBy = "") => {
-  const url = `http://localhost:3000/api/meals${
+  const url = `https://cook-sync-server.vercel.app/api/meals${
     sortBy ? `?sort=${sortBy}` : ""
   }`;
   const res = await secureFetch(url);
@@ -62,7 +62,7 @@ const AdminAllMeals = () => {
 
     try {
       const res = await secureFetch(
-        `http://localhost:3000/api/meals/${mealId}`,
+        `https://cook-sync-server.vercel.app/api/meals/${mealId}`,
         {
           method: "DELETE",
         }
@@ -86,7 +86,7 @@ const AdminAllMeals = () => {
     e.preventDefault();
     try {
       const res = await secureFetch(
-        `http://localhost:3000/api/meals/${editingMeal._id}`,
+        `https://cook-sync-server.vercel.app/api/meals/${editingMeal._id}`,
         {
           method: "PUT",
           headers: { "Content-Type": "application/json" },

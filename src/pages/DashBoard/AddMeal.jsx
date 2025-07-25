@@ -29,10 +29,9 @@ const AddMeal = () => {
   const [imageUploading, setImageUploading] = useState(false);
   const [uploadError, setUploadError] = useState("");
 
-  // ✅ Mutation
   const mutation = useMutation({
     mutationFn: async (mealData) => {
-      const res = await fetch("http://localhost:3000/api/meals", {
+      const res = await fetch("https://cook-sync-server.vercel.app/api/meals", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(mealData),

@@ -26,7 +26,7 @@ const Register = () => {
       role: "user"
     };
 
-    await fetch('http://localhost:3000/users', {
+    await fetch('https://cook-sync-server.vercel.app/users', {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(newUser)

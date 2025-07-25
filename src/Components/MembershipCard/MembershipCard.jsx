@@ -61,7 +61,6 @@ const MembershipPage = () => {
               <p className="flex items-center justify-center gap-2">
                 <FaCheckCircle className="text-green-500" /> Priority Support
               </p>
-              {/* <button className="btn rounded-full mt-6 bg-amber-200 w-full">Choose Gold</button> */}
             </div>
           </div>
 

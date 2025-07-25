@@ -16,7 +16,7 @@ import {
 import AuthContext from "../provider/AuthContext";
 
 const fetchUserRole = async (email) => {
-  const res = await secureFetch(`http://localhost:3000/api/users?email=${encodeURIComponent(email)}`);
+  const res = await secureFetch(`https://cook-sync-server.vercel.app/api/users?email=${encodeURIComponent(email)}`);
   if (res.status !== 200) {
     throw new Error("Failed to fetch user data");
   }

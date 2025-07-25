@@ -5,7 +5,7 @@ import { secureFetch } from "../../Hook/api";
 import AuthContext from "../../provider/AuthContext";
 
 const fetchUserProfile = async (email) => {
-  const res = await secureFetch(`http://localhost:3000/users/${email}`);
+  const res = await secureFetch(`https://cook-sync-server.vercel.app/users/${email}`);
   return res.data; // Axios style: data property contains the response body
 };
 

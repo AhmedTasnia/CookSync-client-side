@@ -7,14 +7,14 @@ import { secureFetch } from "../Hook/api";
 import AuthContext from "../provider/AuthContext";
 
 const fetchMealById = async (id) => {
-  const res = await fetch(`http://localhost:3000/api/meals/${id}`);
+  const res = await fetch(`https://cook-sync-server.vercel.app/api/meals/${id}`);
   if (!res.ok) throw new Error("Failed to fetch meal details");
   return res.json();
 };
 
 const fetchUserByEmail = async (email) => {
   try{
-    const res = await secureFetch(`http://localhost:3000/users/${email}`);
+    const res = await secureFetch(`https://cook-sync-server.vercel.app/users/${email}`);
     return res.json();
   } catch {
     throw new Error("Failed to fetch user");
@@ -22,13 +22,13 @@ const fetchUserByEmail = async (email) => {
 };
 
 const fetchReviews = async (mealId) => {
-  const res = await fetch(`http://localhost:3000/api/reviews/${mealId}`);
+  const res = await fetch(`https://cook-sync-server.vercel.app/api/reviews/${mealId}`);
   if (!res.ok) throw new Error("Failed to fetch reviews");
   return res.json();
 };
 
 const updateMealDetails = async (mealId, updateData) => {
-  const res = await fetch(`http://localhost:3000/api/meals/${mealId}`, {
+  const res = await fetch(`https://cook-sync-server.vercel.app/api/meals/${mealId}`, {
     method: "PATCH",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(updateData),
@@ -62,7 +62,7 @@ const MealDetails = () => {
 
   const likeMeal = useMutation({
     mutationFn: async () => {
-      const res = await fetch(`http://localhost:3000/api/meals/${id}/like`, {
+      const res = await fetch(`https://cook-sync-server.vercel.app/api/meals/${id}/like`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ userEmail: user.email }),
@@ -87,7 +87,7 @@ const MealDetails = () => {
 
   const addReview = useMutation({
     mutationFn: async (review) => {
-      const res = await fetch(`http://localhost:3000/api/reviews`, {
+      const res = await fetch(`https://cook-sync-server.vercel.app/api/reviews`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(review),
@@ -153,7 +153,7 @@ const MealDetails = () => {
     };
 
     try {
-      const res = await fetch("http://localhost:3000/api/mealRequests", {
+      const res = await fetch("https://cook-sync-server.vercel.app/api/mealRequests", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(requestData),

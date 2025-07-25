@@ -14,7 +14,7 @@ const packageDetails = {
 };
 
 const fetchUserData = async (email) => {
-  const res = await secureFetch(`http://localhost:3000/users/${email}`);
+  const res = await secureFetch(`https://cook-sync-server.vercel.app/users/${email}`);
   if (res.status !== 200) {
     throw new Error("Failed to fetch user data");
   }
@@ -95,7 +95,7 @@ const CheckoutPage = () => {
 
       console.log("Payment data to send:", paymentData);
 
-      const saveRes = await fetch("http://localhost:3000/payment", {
+      const saveRes = await fetch("https://cook-sync-server.vercel.app/payment", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(paymentData),

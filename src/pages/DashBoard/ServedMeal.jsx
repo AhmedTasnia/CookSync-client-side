@@ -7,7 +7,7 @@ import { secureFetch } from "../../Hook/api";
 const ITEMS_PER_PAGE = 10;
 
 const fetchRequestedMeals = async (search) => {
-  const url = new URL("http://localhost:3000/api/requestedMeals/admin");
+  const url = new URL("https://cook-sync-server.vercel.app/api/requestedMeals/admin");
   if (search) {
     url.searchParams.append("search", search);
   }
@@ -43,7 +43,7 @@ const ServeMeals = () => {
     mutationFn: async (mealRequestId) => {
       try {
         const res = await secureFetch(
-          `http://localhost:3000/api/requestedMeals/${mealRequestId}/serve`,
+          `https://cook-sync-server.vercel.app/api/requestedMeals/${mealRequestId}/serve`,
           {
             method: "PATCH",
             headers: { "Content-Type": "application/json" },

@@ -13,7 +13,7 @@ const AdminProfile = () => {
 
     const fetchMeals = async () => {
       try {
-        const res = await secureFetch("http://localhost:3000/api/meals");
+        const res = await secureFetch("https://cook-sync-server.vercel.app/api/meals");
         // Since secureFetch is axios-like, data is in res.data
         const meals = res.data || [];
         const adminMeals = meals.filter(meal => meal.distributorEmail === user.email);

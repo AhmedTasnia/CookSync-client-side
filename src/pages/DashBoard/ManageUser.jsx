@@ -26,7 +26,7 @@ const ManageUsers = () => {
     queryFn: async () => {
       try {
         const res = await secureFetch(
-          `http://localhost:3000/users?email=${encodeURIComponent(
+          `https://cook-sync-server.vercel.app/users?email=${encodeURIComponent(
             user.email
           )}&search=${encodeURIComponent(search)}`
         );
@@ -41,7 +41,7 @@ const ManageUsers = () => {
   // Handle promoting user to admin
   const handleMakeAdmin = async (id) => {
     try {
-      const res = await secureFetch(`http://localhost:3000/users/admin/${id}`, {
+      const res = await secureFetch(`https://cook-sync-server.vercel.app/users/admin/${id}`, {
         method: "PATCH",
       });
       if (res.status === 200 || res.status === 204) {
