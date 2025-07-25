@@ -60,7 +60,7 @@ const AddUpcomingMealModal = ({ onClose, onMealAdded }) => {
       distributorName: user?.displayName || "",
       distributorEmail: user?.email || "",
       likes: 0,
-      reviews_count: 0,
+      reviewCount: 0,
       rating: 0,
     };
 

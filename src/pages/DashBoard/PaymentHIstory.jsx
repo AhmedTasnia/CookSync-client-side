@@ -1,19 +1,20 @@
-import React, { useContext } from "react";
+import React, { useContext, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { secureFetch } from "../../Hook/api";
 import AuthContext from "../../provider/AuthContext";
 
 const fetchPayments = async (email) => {
   const response = await secureFetch(`http://localhost:3000/payments?email=${email}`);
-  // secureFetch returns axios-like response, so check response.status instead of response.ok
   if (response.status !== 200) {
     throw new Error("Failed to fetch payment history");
   }
-  return response.data; // return the actual data
+  return response.data;
 };
 
 const PaymentHistory = () => {
   const { user } = useContext(AuthContext);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
   const { data: payments = [], isLoading, isError } = useQuery({
     queryKey: ["payments", user?.email],
@@ -21,6 +22,12 @@ const PaymentHistory = () => {
     queryFn: () => fetchPayments(user.email),
     retry: false,
   });
+
+  const totalPages = Math.ceil(payments.length / itemsPerPage);
+  const paginatedPayments = payments.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
 
   if (isLoading) {
     return (
@@ -40,7 +47,9 @@ const PaymentHistory = () => {
 
   return (
     <div className="max-w-6xl jost-font mx-auto p-4 rounded-lg shadow-lg bg-white">
-      <h2 className="text-3xl font-semibold text-center mb-10 mt-6">My Payment History</h2>
+      <h2 className="text-3xl font-semibold text-center mb-10 mt-6">
+        My Payment History
+      </h2>
 
       {payments.length === 0 ? (
         <div className="text-center text-gray-500 mt-10">
@@ -48,10 +57,10 @@ const PaymentHistory = () => {
         </div>
       ) : (
         <>
-          {/* Table for md+ screens */}
+          {/* Table View */}
           <div className="overflow-x-auto hidden md:block">
-            <table className="w-full border border-gray-200 rounded-lg">
-              <thead className="bg-gray-100">
+            <table className="min-w-full border-collapse border border-gray-300 rounded-lg overflow-hidden">
+              <thead className="bg-[#810000] text-white">
                 <tr>
                   <th className="p-3 border">#</th>
                   <th className="p-3 border">Package</th>
@@ -60,9 +69,11 @@ const PaymentHistory = () => {
                 </tr>
               </thead>
               <tbody>
-                {payments.map((payment, index) => (
+                {paginatedPayments.map((payment, index) => (
                   <tr key={payment._id} className="text-center">
-                    <td className="p-3 border">{index + 1}</td>
+                    <td className="p-3 border">
+                      {(currentPage - 1) * itemsPerPage + index + 1}
+                    </td>
                     <td className="p-3 border">{payment.package || "N/A"}</td>
                     <td className="p-3 border">{payment.price || "N/A"}</td>
                     <td className="p-3 border">
@@ -74,15 +85,17 @@ const PaymentHistory = () => {
             </table>
           </div>
 
-          {/* Cards for small screens */}
+          {/* Card View for small screens */}
           <div className="md:hidden flex flex-col gap-4">
-            {payments.map((payment, index) => (
+            {paginatedPayments.map((payment, index) => (
               <div
                 key={payment._id}
                 className="border rounded-lg shadow p-4 bg-gray-50"
               >
                 <div className="flex justify-between mb-2">
-                  <span className="font-semibold">#{index + 1}</span>
+                  <span className="font-semibold">
+                    #{(currentPage - 1) * itemsPerPage + index + 1}
+                  </span>
                   <span className="text-xs text-gray-400">
                     {new Date(payment.date).toLocaleDateString()}
                   </span>
@@ -96,6 +109,23 @@ const PaymentHistory = () => {
                   {payment.price || "N/A"}
                 </div>
               </div>
+            ))}
+          </div>
+
+          {/* Pagination Controls */}
+          <div className="flex justify-center mt-6 gap-2 flex-wrap">
+            {[...Array(totalPages)].map((_, index) => (
+              <button
+                key={index}
+                onClick={() => setCurrentPage(index + 1)}
+                className={`px-4 py-2 rounded-full border ${
+                  currentPage === index + 1
+                    ? "bg-[#810000] text-white"
+                    : "bg-white text-gray-700"
+                }`}
+              >
+                {index + 1}
+              </button>
             ))}
           </div>
         </>

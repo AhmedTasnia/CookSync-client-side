@@ -1,14 +1,12 @@
-import React, { useContext } from "react";
+import React, { useContext, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import Swal from "sweetalert2";
-import { secureFetch } from "../../Hook/api"; // Axios wrapper with token
+import { secureFetch } from "../../Hook/api";
 import AuthContext from "../../provider/AuthContext";
+import Pagination from "../../Components/Pagination/Pagination";
 
-// ✅ Axios-based fetchers
 const fetchRequestedMeals = async (email) => {
-  const res = await secureFetch(
-    `http://localhost:3000/api/mealRequests?userEmail=${encodeURIComponent(email)}`
-  );
+  const res = await secureFetch(`http://localhost:3000/api/mealRequests?userEmail=${encodeURIComponent(email)}`);
   return res.data;
 };
 
@@ -24,6 +22,8 @@ const fetchAllReviews = async () => {
 
 const RequestedMeals = () => {
   const { user } = useContext(AuthContext);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
   const {
     data: requestedMeals = [],
@@ -54,7 +54,6 @@ const RequestedMeals = () => {
     queryFn: fetchAllReviews,
   });
 
-  // ✅ Use secureFetch for DELETE if route is protected
   const handleCancel = async (id) => {
     const result = await Swal.fire({
       title: "Are you sure?",
@@ -85,13 +84,15 @@ const RequestedMeals = () => {
     }
   };
 
-  // ✅ Handle loading and error states
-  if (!user) return <p className="text-center mt-10">Please login to see your requested meals.</p>;
-  if (loadingRequests || loadingMeals || loadingReviews) return <p className="text-center mt-10">Loading your requested meals...</p>;
-  if (errorRequests || errorMeals || errorReviews) return <p className="text-center mt-10 text-red-500">Failed to load data.</p>;
-  if (requestedMeals.length === 0) return <p className="text-center mt-10">You have no meal requests.</p>;
+  if (!user)
+    return <p className="text-center mt-10">Please login to see your requested meals.</p>;
+  if (loadingRequests || loadingMeals || loadingReviews)
+    return <p className="text-center mt-10">Loading your requested meals...</p>;
+  if (errorRequests || errorMeals || errorReviews)
+    return <p className="text-center mt-10 text-red-500">Failed to load data.</p>;
+  if (requestedMeals.length === 0)
+    return <p className="text-center mt-10">You have no meal requests.</p>;
 
-  // ✅ Enrich data with meal info
   const enrichedMeals = requestedMeals.map((mealReq) => {
     const meal = allMeals.find((m) => m._id === mealReq.mealId);
     const reviewsCount = allReviews.filter((r) => r.mealId === mealReq.mealId).length;
@@ -104,15 +105,20 @@ const RequestedMeals = () => {
     };
   });
 
+  // Pagination logic
+  const totalPages = Math.ceil(enrichedMeals.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const paginatedMeals = enrichedMeals.slice(startIndex, startIndex + itemsPerPage);
+
   return (
-    <div className="container mx-auto bg-white rounded-xl shadow-md p-8 mt-6">
-      <h2 className="text-2xl font-bold mb-6">My Requested Meals</h2>
+    <div className="container mx-auto jost-font bg-white rounded-xl shadow-md p-8 mt-6">
+      <h2 className="text-3xl text-red-900 text-center font-bold mb-6">My Requested Meals</h2>
 
       {/* Table for medium+ devices */}
       <div className="hidden md:block">
         <div className="overflow-x-auto">
-          <table className="table-auto w-full border border-gray-200 rounded-lg">
-            <thead className="bg-gray-100">
+          <table className="min-w-full border-collapse border border-gray-300 rounded-lg overflow-hidden">
+            <thead className="bg-[#810000] text-white">
               <tr>
                 <th className="p-4 text-left">Meal Title</th>
                 <th className="p-4 text-center">Likes</th>
@@ -122,7 +128,7 @@ const RequestedMeals = () => {
               </tr>
             </thead>
             <tbody>
-              {enrichedMeals.map((meal) => (
+              {paginatedMeals.map((meal) => (
                 <tr key={meal._id}>
                   <td className="p-4">{meal.mealTitle}</td>
                   <td className="p-4 text-center">{meal.likes}</td>
@@ -156,12 +162,19 @@ const RequestedMeals = () => {
       </div>
 
       {/* Cards for small devices */}
-      <div className="md:hidden space-y-4">
-        {enrichedMeals.map((meal) => (
-          <div key={meal._id} className="border rounded-lg p-4 shadow-sm bg-gray-50">
+      <div className="md:hidden space-y-4 mt-4">
+        {paginatedMeals.map((meal) => (
+          <div
+            key={meal._id}
+            className="border rounded-lg p-4 shadow-sm bg-gray-50"
+          >
             <h3 className="text-lg font-semibold">{meal.mealTitle}</h3>
-            <p className="mt-2"><span className="font-medium">Likes:</span> {meal.likes}</p>
-            <p><span className="font-medium">Reviews:</span> {meal.reviews_count}</p>
+            <p className="mt-2">
+              <span className="font-medium">Likes:</span> {meal.likes}
+            </p>
+            <p>
+              <span className="font-medium">Reviews:</span> {meal.reviews_count}
+            </p>
             <p className="my-2">
               <span className="font-medium">Status:</span>{" "}
               <span
@@ -184,6 +197,15 @@ const RequestedMeals = () => {
             </button>
           </div>
         ))}
+      </div>
+
+      {/* Pagination Component */}
+      <div className="mt-6 flex justify-center">
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={setCurrentPage}
+        />
       </div>
     </div>
   );

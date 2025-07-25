@@ -153,7 +153,7 @@ const DashboardLayout = () => {
 
         <button
           onClick={() => navigate("/")}
-          className="flex items-center justify-center gap-2 text-red-400 hover:text-red-500 font-semibold px-4 py-2 mt-6 rounded-full border border-red-400 hover:bg-red-800 hover:bg-opacity-10 transition"
+          className="flex items-center justify-center gap-2 text-red-400 hover:text-white font-semibold px-4 py-2 mt-6 rounded-full border border-red-400 hover:bg-red-800 hover:bg-opacity-10 transition"
         >
           <FaSignOutAlt size={18} />
           Exit

@@ -4,6 +4,7 @@ import { FaTrashAlt, FaEye } from "react-icons/fa";
 import Swal from "sweetalert2";
 import { useNavigate } from "react-router";
 import { secureFetch } from "../../Hook/api";
+import Pagination from "../../Components/Pagination/Pagination";
 
 const fetchMeals = async () => {
   const res = await secureFetch("http://localhost:3000/api/meals");
@@ -93,21 +94,7 @@ const AllReviews = () => {
     currentPage * itemsPerPage
   );
 
-  const Pagination = () => (
-    <div className="flex justify-center mt-6 gap-2">
-      {Array.from({ length: totalPages }, (_, i) => (
-        <button
-          key={i}
-          onClick={() => setCurrentPage(i + 1)}
-          className={`px-3 py-1 rounded-md border ${
-            currentPage === i + 1 ? "bg-[#810000] text-white" : "bg-white text-[#810000] border-[#810000]"
-          } hover:bg-[#a30000] hover:text-white transition`}
-        >
-          {i + 1}
-        </button>
-      ))}
-    </div>
-  );
+
 
   return (
     <div className="max-w-5xl mx-auto p-6 bg-white rounded-2xl shadow-md">
@@ -169,9 +156,7 @@ const AllReviews = () => {
               </div>
             ))}
           </div>
-
-          
-          <Pagination />
+          <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
         </>
       )}
     </div>

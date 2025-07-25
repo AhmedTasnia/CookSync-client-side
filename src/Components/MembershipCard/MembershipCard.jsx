@@ -25,7 +25,7 @@ const MembershipPage = () => {
           {/* Silver */}
           <div
             onClick={() => handleNavigate("Silver")}
-            className="cursor-pointer text-center bg-red-50 rounded-lg p-8 shadow-md hover:shadow-lg transition"
+            className="cursor-pointer text-center bg-gray-50 rounded-lg p-8 shadow-md hover:shadow-lg transition"
           >
             <FaMedal className="text-5xl text-gray-400 mx-auto mb-6" />
             <h2 className="text-3xl font-bold text-gray-700 mb-4">Silver</h2>
@@ -61,13 +61,14 @@ const MembershipPage = () => {
               <p className="flex items-center justify-center gap-2">
                 <FaCheckCircle className="text-green-500" /> Priority Support
               </p>
+              {/* <button className="btn rounded-full mt-6 bg-amber-200 w-full">Choose Gold</button> */}
             </div>
           </div>
 
           {/* Platinum */}
           <div
             onClick={() => handleNavigate("Platinum")}
-            className="cursor-pointer text-center bg-red-50 rounded-lg p-8 shadow-md hover:shadow-lg transition"
+            className="cursor-pointer text-center bg-purple-100 rounded-lg p-8 shadow-md hover:shadow-lg transition"
           >
             <FaGem className="text-5xl text-purple-400 mx-auto mb-6" />
             <h2 className="text-3xl font-bold text-gray-700 mb-4">Platinum</h2>

@@ -1,10 +1,11 @@
-import React, { useContext } from "react";
+import React, { useContext, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { FaTrashAlt, FaEye } from "react-icons/fa";
 import Swal from "sweetalert2";
 import { useNavigate } from "react-router";
-import { secureFetch } from "../../Hook/api"; 
+import { secureFetch } from "../../Hook/api";
 import AuthContext from "../../provider/AuthContext";
+import Pagination from "../../Components/Pagination/Pagination"; // ✅ Import your Pagination component
 
 const fetchReviews = async () => {
   const res = await secureFetch("http://localhost:3000/api/reviews");
@@ -26,12 +27,14 @@ const deleteReview = async (id) => {
   return res.data;
 };
 
+const REVIEWS_PER_PAGE = 10; 
+
 const AllReviews = () => {
   const { user } = useContext(AuthContext);
   const queryClient = useQueryClient();
   const navigate = useNavigate();
+  const [currentPage, setCurrentPage] = useState(1); 
 
-  // Fetch reviews, enabled only if user.email is available
   const {
     data: allReviews = [],
     isLoading: isLoadingReviews,
@@ -43,7 +46,6 @@ const AllReviews = () => {
     enabled: !!user?.email,
   });
 
-  // Fetch meals independently
   const {
     data: meals = [],
     isLoading: isLoadingMeals,
@@ -54,7 +56,6 @@ const AllReviews = () => {
     queryFn: fetchMeals,
   });
 
-  // Mutation for deleting a review
   const mutation = useMutation({
     mutationFn: deleteReview,
     onSuccess: () => {
@@ -66,7 +67,6 @@ const AllReviews = () => {
     },
   });
 
-  // Handle delete button click with confirmation
   const handleDelete = (id) => {
     Swal.fire({
       title: "Are you sure?",
@@ -83,7 +83,6 @@ const AllReviews = () => {
     });
   };
 
-  // Handle view meal button click (navigate to meal page)
   const handleViewMeal = (mealId) => {
     if (mealId) {
       navigate(`/meal/${mealId}`);
@@ -92,20 +91,14 @@ const AllReviews = () => {
     }
   };
 
-  // Show loading if user or data not ready
   if (!user) {
-    return (
-      <div className="text-center py-10 text-gray-600">
-        Loading user info...
-      </div>
-    );
+    return <div className="text-center py-10 text-gray-600">Loading user info...</div>;
   }
 
   if (isLoadingReviews || isLoadingMeals) {
     return <div className="text-center py-10 text-gray-600">Loading data...</div>;
   }
 
-  // Show error message if any error occurs
   if (isErrorReviews || isErrorMeals) {
     return (
       <div className="text-center py-10 text-red-500">
@@ -114,13 +107,11 @@ const AllReviews = () => {
     );
   }
 
-  // Filter reviews for current user (case insensitive)
   const myReviews = allReviews.filter(
     (review) =>
       review.userEmail?.trim().toLowerCase() === user.email.trim().toLowerCase()
   );
 
-  // Map reviews with meal data and counts
   const reviewsWithStats = myReviews.map((review) => {
     const meal = meals.find((m) => m._id === review.mealId);
     const reviewsCount = allReviews.filter((r) => r.mealId === review.mealId).length;
@@ -133,9 +124,13 @@ const AllReviews = () => {
     };
   });
 
+  const totalPages = Math.ceil(reviewsWithStats.length / REVIEWS_PER_PAGE);
+  const startIndex = (currentPage - 1) * REVIEWS_PER_PAGE;
+  const currentReviews = reviewsWithStats.slice(startIndex, startIndex + REVIEWS_PER_PAGE);
+
   return (
-    <div className="max-w-5xl mx-auto p-6 bg-white rounded-2xl shadow-md">
-      <h2 className="text-3xl font-semibold mb-6 text-center text-[#810000]">
+    <div className="max-w-5xl mx-auto p-6 jost-font bg-white rounded-2xl shadow-md">
+      <h2 className="text-3xl font-bold mb-6 text-center text-[#810000]">
         My Reviews
       </h2>
 
@@ -143,7 +138,7 @@ const AllReviews = () => {
         <p className="text-center text-gray-500">No reviews found.</p>
       ) : (
         <>
-          {/* Table for medium and larger screens */}
+          {/* Desktop table */}
           <div className="hidden md:block overflow-x-auto">
             <table className="min-w-full border-collapse border border-gray-300 rounded-lg overflow-hidden">
               <thead className="bg-[#810000] text-white">
@@ -156,7 +151,7 @@ const AllReviews = () => {
                 </tr>
               </thead>
               <tbody>
-                {reviewsWithStats.map(({ _id, mealTitle, likes, reviews_count, mealId }) => (
+                {currentReviews.map(({ _id, mealTitle, likes, reviews_count, mealId }) => (
                   <tr
                     key={_id}
                     className="border-b border-gray-300 hover:bg-gray-50 transition"
@@ -188,13 +183,10 @@ const AllReviews = () => {
             </table>
           </div>
 
-          {/* Cards for small screens */}
+          {/* Mobile cards */}
           <div className="md:hidden space-y-4">
-            {reviewsWithStats.map(({ _id, mealTitle, likes, reviews_count, mealId }) => (
-              <div
-                key={_id}
-                className="border rounded-xl p-4 shadow-sm bg-gray-50"
-              >
+            {currentReviews.map(({ _id, mealTitle, likes, reviews_count, mealId }) => (
+              <div key={_id} className="border rounded-xl p-4 shadow-sm bg-gray-50">
                 <h3 className="text-lg font-semibold text-[#810000]">{mealTitle}</h3>
                 <p className="text-sm text-gray-700">
                   <strong>Likes:</strong> {likes}
@@ -221,6 +213,11 @@ const AllReviews = () => {
               </div>
             ))}
           </div>
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={setCurrentPage}
+          />
         </>
       )}
     </div>

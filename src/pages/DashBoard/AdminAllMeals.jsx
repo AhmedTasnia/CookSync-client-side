@@ -7,10 +7,13 @@ import { secureFetch } from "../../Hook/api";
 import Pagination from "../../Components/Pagination/Pagination";
 
 const fetchMeals = async (sortBy = "") => {
-  const url = `http://localhost:3000/api/meals${sortBy ? `?sort=${sortBy}` : ""}`;
+  const url = `http://localhost:3000/api/meals${
+    sortBy ? `?sort=${sortBy}` : ""
+  }`;
   const res = await secureFetch(url);
-  if (res.status !== 200) throw new Error(`Failed to fetch meals: ${res.statusText}`);
-  return res.data; // Axios response data is here
+  if (res.status !== 200)
+    throw new Error(`Failed to fetch meals: ${res.statusText}`);
+  return res.data;
 };
 
 const AdminAllMeals = () => {
@@ -22,15 +25,26 @@ const AdminAllMeals = () => {
   const navigate = useNavigate();
 
   const {
-    data: meals,
+    data: mealsRaw,
     isLoading,
     error,
   } = useQuery({
-    queryKey: ["meals", sortField],
-    queryFn: () => fetchMeals(sortField),
+    queryKey: ["meals"],
+    queryFn: () => fetchMeals(),
     keepPreviousData: true,
     staleTime: 5 * 60 * 1000,
   });
+
+  const meals = React.useMemo(() => {
+    if (!mealsRaw) return [];
+    if (sortField === "likes") {
+      return [...mealsRaw].sort((a, b) => b.likes - a.likes);
+    }
+    if (sortField === "reviewCount") {
+      return [...mealsRaw].sort((a, b) => b.reviewCount - a.reviewCount);
+    }
+    return mealsRaw;
+  }, [mealsRaw, sortField]);
 
   console.log("Fetched meals:", meals);
 
@@ -47,9 +61,12 @@ const AdminAllMeals = () => {
     if (!result.isConfirmed) return;
 
     try {
-      const res = await secureFetch(`http://localhost:3000/api/meals/${mealId}`, {
-        method: "DELETE",
-      });
+      const res = await secureFetch(
+        `http://localhost:3000/api/meals/${mealId}`,
+        {
+          method: "DELETE",
+        }
+      );
       if (res.status === 200) {
         Swal.fire("Deleted!", "Meal has been deleted.", "success");
         queryClient.invalidateQueries(["meals"]);
@@ -68,16 +85,19 @@ const AdminAllMeals = () => {
   const handleUpdateSubmit = async (e) => {
     e.preventDefault();
     try {
-      const res = await secureFetch(`http://localhost:3000/api/meals/${editingMeal._id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          title: editingMeal.title,
-          distributorName: editingMeal.distributorName,
-          rating: parseFloat(editingMeal.rating),
-          price: parseFloat(editingMeal.price),
-        }),
-      });
+      const res = await secureFetch(
+        `http://localhost:3000/api/meals/${editingMeal._id}`,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            title: editingMeal.title,
+            distributorName: editingMeal.distributorName,
+            rating: parseFloat(editingMeal.rating),
+            price: parseFloat(editingMeal.price),
+          }),
+        }
+      );
       if (res.status === 200) {
         Swal.fire("Success!", "Meal updated successfully.", "success");
         queryClient.invalidateQueries(["meals"]);
@@ -93,9 +113,12 @@ const AdminAllMeals = () => {
   if (isLoading) return <p className="text-center py-8">Loading meals...</p>;
   if (error)
     return (
-      <p className="text-center text-red-600 py-8">Error loading meals: {error.message}</p>
+      <p className="text-center text-red-600 py-8">
+        Error loading meals: {error.message}
+      </p>
     );
-  if (meals.length === 0) return <p className="text-center py-8">No meals found.</p>;
+  if (meals.length === 0)
+    return <p className="text-center py-8">No meals found.</p>;
 
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
@@ -153,7 +176,8 @@ const AdminAllMeals = () => {
                     onClick={() => handleEditClick(meal)}
                     className="flex items-center gap-2 bg-red-50 text-blue-900 px-4 py-1 rounded-lg hover:bg-blue-200 transition"
                   >
-                    <FaEdit size={18} />Update
+                    <FaEdit size={18} />
+                    Update
                   </button>
                 </td>
                 <td className="p-3 text-center">
@@ -161,7 +185,8 @@ const AdminAllMeals = () => {
                     onClick={() => handleDelete(meal._id)}
                     className="flex items-center gap-2 bg-red-50 text-red-800 px-4 py-1 rounded-lg hover:bg-red-200 transition"
                   >
-                    <FaTrashAlt size={18} />Delete
+                    <FaTrashAlt size={18} />
+                    Delete
                   </button>
                 </td>
                 <td className="p-3 text-center">
@@ -169,7 +194,8 @@ const AdminAllMeals = () => {
                     onClick={() => navigate(`/meal/${meal._id}`)}
                     className="flex items-center gap-2 bg-red-50 text-[#810000] px-4 py-1 rounded-lg hover:bg-red-200 transition"
                   >
-                    <FaEye size={18} />Details
+                    <FaEye size={18} />
+                    Details
                   </button>
                 </td>
               </tr>
@@ -184,7 +210,9 @@ const AdminAllMeals = () => {
             key={meal._id}
             className="border rounded-xl shadow-md p-4 space-y-2"
           >
-            <h3 className="text-xl font-semibold text-[#810000]">{meal.title}</h3>
+            <h3 className="text-xl font-semibold text-[#810000]">
+              {meal.title}
+            </h3>
             <p>
               Likes: <span className="font-medium">{meal.likes}</span>
             </p>
@@ -192,10 +220,12 @@ const AdminAllMeals = () => {
               Reviews: <span className="font-medium">{meal.reviewCount}</span>
             </p>
             <p>
-              Rating: <span className="font-medium">{meal.rating?.toFixed(1)}</span>
+              Rating:{" "}
+              <span className="font-medium">{meal.rating?.toFixed(1)}</span>
             </p>
             <p>
-              Distributor: <span className="font-medium">{meal.distributorName}</span>
+              Distributor:{" "}
+              <span className="font-medium">{meal.distributorName}</span>
             </p>
             <div className="flex gap-2 flex-wrap">
               <button
@@ -245,7 +275,9 @@ const AdminAllMeals = () => {
                 />
               </div>
               <div>
-                <label className="block font-medium mb-1">Distributor Name</label>
+                <label className="block font-medium mb-1">
+                  Distributor Name
+                </label>
                 <input
                   type="text"
                   value={editingMeal.distributorName}
@@ -312,7 +344,6 @@ const AdminAllMeals = () => {
             </form>
           </div>
         </div>
-        
       )}
     </div>
   );
