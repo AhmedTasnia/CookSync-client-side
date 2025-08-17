@@ -62,6 +62,31 @@ const NavBar = () => {
     </>
   );
 
+    const privateLinks = user && (
+    <>
+      <li>
+        <NavLink
+          to="/chefs"
+          className={({ isActive }) =>
+            isActive ? "text-[#B8CFCE] underline pb-1" : "text-white"
+          }
+        >
+          Meet Our Chefs
+        </NavLink>
+      </li>
+      <li>
+        <NavLink
+          to="/AboutUs"
+          className={({ isActive }) =>
+            isActive ? "text-[#B8CFCE] underline pb-1" : "text-white"
+          }
+        >
+          About Us
+        </NavLink>
+      </li>
+    </>
+  );
+
   return (
     <div className="px-6 navbar shadow-sm bg-[#1B1717] jost-font text-white fixed top-0 w-full z-50">
       <div className="container mx-auto flex justify-between items-center py-2">
@@ -88,6 +113,7 @@ const NavBar = () => {
               className="menu menu-sm dropdown-content bg-[#333446] rounded-box z-10 mt-3 w-52 p-2 shadow"
             >
               {commonLinks}
+              {privateLinks}
             </ul>
           </div>
 
@@ -104,7 +130,7 @@ const NavBar = () => {
         </div>
 
         <div className="hidden lg:flex">
-          <ul className="flex gap-10 items-center justify-center">{commonLinks}</ul>
+          <ul className="flex gap-10 items-center justify-center">{commonLinks}{privateLinks}</ul>
         </div>
 
         <div className="flex items-center gap-4 relative">

@@ -22,6 +22,7 @@ import MealUpcoming from "../pages/DashBoard/Mealupcoming";
 import CheckoutPage from "../Components/Checkout/Checkout";
 import AdminAllMeals from "../pages/DashBoard/AdminAllMeals";
 import MealDetails from "../MealDetails/MealDetails";
+import Chef from "../Components/Chefs/Chef";
 
 export const router = createBrowserRouter([
   {
@@ -47,6 +48,10 @@ export const router = createBrowserRouter([
       {
         path: "/meal/:id",
         element: <MealDetails />,
+      },
+      {
+        path: "chefs",
+        element: <Chef />,
       },
       
     ],
