@@ -204,7 +204,7 @@ const RequestedMeals = () => {
         <Pagination
           currentPage={currentPage}
           totalPages={totalPages}
-          onPageChange={setCurrentPage}
+          setCurrentPage={setCurrentPage}
         />
       </div>
     </div>

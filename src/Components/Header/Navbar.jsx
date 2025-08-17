@@ -63,8 +63,8 @@ const NavBar = () => {
   );
 
   return (
-    <div className="px-4 navbar shadow-sm bg-[#1B1717] jost-font text-white sticky top-0 z-50">
-      <div className="container mx-auto flex justify-between items-center py-3">
+    <div className="px-6 navbar shadow-sm bg-[#1B1717] jost-font text-white fixed top-0 w-full z-50">
+      <div className="container mx-auto flex justify-between items-center py-2">
         <div className="flex items-center gap-4">
           <div className="dropdown">
             <div tabIndex={0} role="button" className="btn btn-ghost lg:hidden">

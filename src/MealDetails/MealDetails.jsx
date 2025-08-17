@@ -13,12 +13,9 @@ const fetchMealById = async (id) => {
 };
 
 const fetchUserByEmail = async (email) => {
-  try{
+  
     const res = await secureFetch(`https://cook-sync-server.vercel.app/users/${email}`);
     return res.data();
-  } catch {
-    throw new Error("Failed to fetch user");
-  }
 };
 
 const fetchReviews = async (mealId) => {
@@ -49,11 +46,21 @@ const MealDetails = () => {
     queryFn: () => fetchMealById(id),
   });
 
-  useQuery({
+  const { data: userData,isLoading: isUserLoading, isError: isUserError } = useQuery({
     queryKey: ["user", user?.email],
-    queryFn: () => fetchUserByEmail(user.email),
-    enabled: !!user?.email,
+    queryFn: async() => {
+      try{
+        const res = await secureFetch(`https://cook-sync-server.vercel.app/users/${user.email}`);
+        return res.data;
+      }
+      catch (error) {
+        console.error("Failed to fetch user data:", error);
+        return null;
+      }
+    },
+    enabled: !!user?.email, // Only run if user is logged in
   });
+
 
   const { data: reviews = [], refetch: refetchReviews } = useQuery({
     queryKey: ["reviews", id],
@@ -128,29 +135,20 @@ const MealDetails = () => {
       navigate("/SignUp");
       return;
     }
-
-    // Fetch user data from backend to get the badge
-    let userBadge = null;
-    try {
-      const res = await fetch(`https://cook-sync-server.vercel.app/users/${user.email}`);
-      if (!res.ok) throw new Error("Failed to fetch user data");
-      const userData = await res.json();
-      userBadge = userData.badge;
-    } catch {
-      Swal.fire("Error", "Could not fetch user badge.", "error");
+    if (isUserLoading) {
+      console.log("User data:", userData);
       return;
     }
+    const badge = userData?.badge;
+    console.log("User badge:", badge);
+    // return;
 
-    if (!["Silver", "Gold", "Platinum"].includes(userBadge)) {
-      Swal.fire({
-        icon: "warning",
-        title: "Membership Required",
-        text: "You need a Silver, Gold, or Platinum badge to request meals.",
-        confirmButtonColor: "#810000",
-      });
+    if (badge === "bronze") {
+      Swal.fire('Warning', 'You need to upgrade your membership to request meals.', 'warning');
       navigate("/");
       return;
     }
+
     // If user has a valid badge, post their badge info with the request
     const requestData = {
       userName: user.displayName,
@@ -160,7 +158,7 @@ const MealDetails = () => {
       distributorName: meal.distributorName,
       status: "Pending",
       requestTime: new Date().toISOString(),
-      userBadge: userBadge,
+      userBadge: user.badge,
     };
 
     try {
@@ -212,6 +210,10 @@ const MealDetails = () => {
 
     addReview.mutate(reviewPayload);
   };
+
+  if (isLoading || isUserLoading) return <p className="text-center my-10">Loading...</p>;
+// console.log("Meal data:", meal);
+// console.log("User data:", userData);
 
   return (
     <div className="container mx-auto jost-font py-16 px-6">
