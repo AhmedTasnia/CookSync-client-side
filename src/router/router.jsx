@@ -23,6 +23,7 @@ import CheckoutPage from "../Components/Checkout/Checkout";
 import AdminAllMeals from "../pages/DashBoard/AdminAllMeals";
 import MealDetails from "../MealDetails/MealDetails";
 import Chef from "../Components/Chefs/Chef";
+import Info from "../Components/Info/Info";
 
 export const router = createBrowserRouter([
   {
@@ -53,7 +54,10 @@ export const router = createBrowserRouter([
         path: "chefs",
         element: <Chef />,
       },
-      
+      {
+        path: "info",
+        element: <Info />,  
+      },
     ],
   },
   {

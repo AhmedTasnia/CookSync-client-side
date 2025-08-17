@@ -76,7 +76,7 @@ const NavBar = () => {
       </li>
       <li>
         <NavLink
-          to="/AboutUs"
+          to="/Info"
           className={({ isActive }) =>
             isActive ? "text-[#B8CFCE] underline pb-1" : "text-white"
           }
