@@ -23,3 +23,30 @@
   font-weight: 800;
   font-style: normal;
 }
+
+
+[data-theme="dark"] {
+  /* Dark mode colors */
+  --bg-color: #000000;
+  --text-color: #f1f5f9;
+  --primary-color: #EEEBDD;
+  --secondary-color: #9ca3af;
+}
+
+/* Apply globally */
+body {
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  transition: background-color 0.3s, color 0.3s;
+}
+
+/* Links / buttons */
+a, button {
+  color: var(--primary-color);
+}
+
+/* Secondary texts */
+small, .secondary {
+  color: var(--secondary-color);
+}
+

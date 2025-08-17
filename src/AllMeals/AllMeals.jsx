@@ -66,7 +66,7 @@ const AllMeals = () => {
 
   return (
     <div className="container mx-auto jost-font px-6 py-16">
-      <h1 className="text-4xl font-bold text-center mb-10 text-[#630000]">
+      <h1 className="text-4xl mt-10 font-bold text-center mb-10 text-[#630000]">
         Explore All Meals
       </h1>
 

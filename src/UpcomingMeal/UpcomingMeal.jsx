@@ -122,7 +122,7 @@ const UpcomingMeals = () => {
 
   return (
     <div className="container mx-auto px-6 py-16">
-      <h1 className="text-4xl font-bold text-center mb-10 text-[#630000]">
+      <h1 className="text-4xl mt-10 font-bold text-center mb-10 text-[#630000]">
         Upcoming Meals
       </h1>
       <div className="grid md:grid-cols-3 gap-8">
