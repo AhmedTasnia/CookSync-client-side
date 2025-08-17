@@ -5,7 +5,7 @@ import Swal from "sweetalert2";
 import { secureFetch } from "../../Hook/api";
 import AuthContext from "../../provider/AuthContext";
 
-const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:3000";
+const API_URL = "https://cook-sync-server.vercel.app/api/upcomingMeals";
 
 const AddUpcomingMealModal = ({ onClose, onMealAdded }) => {
   const { user } = useContext(AuthContext);
@@ -65,7 +65,7 @@ const AddUpcomingMealModal = ({ onClose, onMealAdded }) => {
     };
 
     try {
-      const res = await secureFetch(`${BACKEND_URL}/api/upcomingMeals`, {
+      const res = await secureFetch(API_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(mealData),
@@ -135,12 +135,10 @@ const MealUpcoming = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
 
-  console.log("User in MealUpcoming:", user);
-
   const fetchUpcomingMeals = async () => {
     setLoading(true);
     try {
-      const res = await secureFetch(`${BACKEND_URL}/api/upcomingMeals?sort=likes`);
+      const res = await secureFetch(`${API_URL}?sort=likes`);
       if (res.status !== 200) throw new Error("Failed to fetch meals");
       setMeals(res.data);
     } catch (error) {
@@ -150,6 +148,7 @@ const MealUpcoming = () => {
       setLoading(false);
     }
   };
+  console.log("User:", user);
 
   useEffect(() => {
     fetchUpcomingMeals();
@@ -157,7 +156,7 @@ const MealUpcoming = () => {
 
   const handlePublish = async (mealId) => {
     try {
-      const res = await secureFetch(`${BACKEND_URL}/api/upcomingMeals/${mealId}/publish`, {
+      const res = await secureFetch(`${API_URL}/${mealId}/publish`, {
         method: "PATCH",
       });
       if (res.status !== 200) throw new Error("Failed to publish meal");

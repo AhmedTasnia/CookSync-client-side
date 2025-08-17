@@ -8,7 +8,7 @@ const Info = () => {
           initial={{ opacity: 0, y: -50 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
-          className="text-4xl font-bold text-gray-800 mb-4 mt-12"
+          className="text-4xl font-bold text-[#810000] mb-4 mt-12"
         >
           About Us
         </motion.h1>
@@ -78,7 +78,7 @@ const Info = () => {
         transition={{ delay: 0.5, duration: 1 }}
         className="max-w-5xl mx-auto mt-16 text-center"
       >
-        <h2 className="text-2xl font-semibold text-gray-800 mb-4">
+        <h2 className="text-2xl font-semibold text-[#810000] mb-4">
           Our Commitment
         </h2>
         <p className="text-gray-600">
